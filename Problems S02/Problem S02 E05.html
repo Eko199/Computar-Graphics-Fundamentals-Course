@@ -1,0 +1,108 @@
+﻿<html>
+	<head>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+		<script type="importmap">
+			{ "imports": {
+				"three": "https://cdn.jsdelivr.net/npm/three@0.164.0/build/three.module.js"
+			} }
+		</script>
+	</head>
+	<body>
+		<script type="module">
+		
+			import * as THREE from "three";
+
+			// Задача: създайте град в равнината - постройките
+			// да са вертикални паралелепипеди със случайна
+			// височина
+			
+			var N = 30; // 10x10 брой "карета" в града
+			let citySize = 30;
+			
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setAnimationLoop( drawFrame );
+			document.body.appendChild( renderer.domElement );
+
+			var scene = new THREE.Scene();
+			
+			var aspect = window.innerWidth/window.innerHeight;
+			var camera = new THREE.PerspectiveCamera( 30, aspect );
+			camera.position.set( 6, 7, 20 );
+			camera.lookAt( scene.position );
+
+			
+			// някъде тук постройте града
+			let material = new THREE.MeshPhongMaterial();
+			let geometry = new THREE.BoxGeometry( 500, 0.1, 500 );
+			let plane = new THREE.Mesh(geometry, material);
+			scene.add(plane);
+
+			material = new THREE.MeshPhongMaterial({
+				color: "gray"
+			});
+
+			let buildings = [];
+			let baseHeights = [];
+			let randoms = [];
+
+			for (let i = 0; i < N / 2; i++)
+			for (let j = 0; j < N / 2; j++) {
+				let h = 1 + Math.random() * 1;
+
+				geometry = new THREE.BoxGeometry( 1, h, 1 );
+				let building = new THREE.Mesh( geometry, material );
+
+				let x = Math.random() * citySize - citySize / 2;
+				let z = Math.random() * citySize - citySize / 2;
+				building.position.set(x, h/2, z);
+
+				scene.add( building );
+				buildings.push(building);
+				baseHeights.push(h);
+
+				let random = Math.random() * 2 - 1;
+				if (random > 0)
+					random++;
+				else
+					random--;
+				randoms.push(random);
+			}
+
+
+			var light = new THREE.PointLight( 'white', 200 );
+			light.position.set( 3, 7, 9 );
+			scene.add( light );
+
+			light = new THREE.PointLight( 'white', 200 );
+			light.position.set( 3, 7, -9 );
+			scene.add( light );
+
+			
+			function drawFrame( t )
+			{
+				scene.rotation.y = t/2000;
+
+				//if (t % 1 == 0) {
+					// for (const building of buildings) {
+					// 	//building.scale.y = Math.abs(Math.min(building.scale.y + Math.random() - 0.5, 2));
+					// 	building.scale.y
+					// 	building.position.set(building.position.x, building.scale.y / 2, building.position.z);
+					// }
+					for (let i = 0; i < buildings.length; i++) {
+						//building.scale.y = Math.abs(Math.min(building.scale.y + Math.random() - 0.5, 2));
+						let building = buildings[i];
+						building.scale.y = baseHeights[i] + Math.sin(t / 2 + randoms[i]) * randoms[i] / 2;
+						building.position.set(building.position.x, building.scale.y / 2, building.position.z);
+					}
+				//}
+
+				renderer.render( scene, camera );
+			}
+			
+		</script>
+	</body>
+</html>
