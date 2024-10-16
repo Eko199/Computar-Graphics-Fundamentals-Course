@@ -22,8 +22,8 @@
 			
 			const aspect = window.innerWidth / window.innerHeight;
 			const camera = new THREE.PerspectiveCamera(30, aspect);
-			camera.position.set(3.5, 2, 13);
-			camera.lookAt(new THREE.Vector3(0, -0.5, 0));
+			camera.position.set(2.5, 1, 10);
+			camera.lookAt(new THREE.Vector3(0, -1, 0));
 
 			addBox(8, ROOM_SIZE, 0.5, ROOM_COLOR, 0, 0, -5);
 			addBox(0.5, ROOM_SIZE, ROOM_SIZE, ROOM_COLOR, 4, 0, 0);
@@ -33,12 +33,12 @@
 
 			for (let i = 0; i < 5; i++) {
 				for (let j = 0; j < 8; j++) {
-					addBox(0.5, 0.6, 0.1, 0x731532, -2.2 + 0.7 * j, -2.2 + i * 0.2, i - 0.7);
-					addBox(0.5, 0.1, 0.4, 0x635224, -2.2 + 0.7 * j, -2.45 + i * 0.2, i - 0.9);
+					addBox(0.5, 0.6, 0.1, 0x731532, -2.2 + 0.7 * j, -2.45 + i * 0.2, i - 0.7);
+					addBox(0.5, 0.1, 0.4, 0x635224, -2.2 + 0.7 * j, -2.7 + i * 0.2, i - 0.9);
 				}
 
 				if (i > 0) {
-					addBox(5.5, i * 0.2, 1, ORANGE_NUANCE, 0.2, -2.5 + i * 0.1, i - 1);
+					addBox(5.5, i * 0.2, 1, ORANGE_NUANCE, 0.2, -2.75 + i * 0.1, i - 1);
 				}
 			}
 
@@ -60,13 +60,13 @@
 			let speakers = [];
 			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, -3.7, 1, -1));
 			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, -3.7, 1, 1));
-			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, -3.7, 1, 2));
+			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, -3.7, 1, 3));
 			speakers.forEach(s => s.rotation.set(0, 0, -Math.PI / 15));
 
 			speakers = [];
 			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, 3.7, 1, -1));
 			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, 3.7, 1, 1));
-			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, 3.7, 1, 2));
+			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, 3.7, 1, 3));
 			speakers.forEach(s => s.rotation.set(0, 0, Math.PI / 15));
 
 			addBox(0.2, 3, 8, ORANGE_NUANCE, -2.7, -3, 2.05);
