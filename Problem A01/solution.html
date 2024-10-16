@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="three.min.js"></script>
+		<script>
+			const ROOM_COLOR = 0x0e2e5d;
+			const ROOM_SIZE = 10;
+			const SPEAKER_COLOR = 0x3b4765;
+			const ORANGE_NUANCE = 0x3d1a19;
+
+			const renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
+
+			const scene = new THREE.Scene();
+			
+			const aspect = window.innerWidth / window.innerHeight;
+			const camera = new THREE.PerspectiveCamera(30, aspect);
+			camera.position.set(3.5, 2, 13);
+			camera.lookAt(new THREE.Vector3(0, -0.5, 0));
+
+			addBox(8, ROOM_SIZE, 0.5, ROOM_COLOR, 0, 0, -5);
+			addBox(0.5, ROOM_SIZE, ROOM_SIZE, ROOM_COLOR, 4, 0, 0);
+			addBox(0.5, ROOM_SIZE, ROOM_SIZE, ROOM_COLOR, -4, 0, 0);
+			addBox(ROOM_SIZE, 0.5, ROOM_SIZE, 0x0e1214, 0, -3, 0);
+			addBox(ROOM_SIZE, 0.5, ROOM_SIZE, 0x0e1214, 0, 3, 0);
+
+			for (let i = 0; i < 5; i++) {
+				for (let j = 0; j < 8; j++) {
+					addBox(0.5, 0.6, 0.1, 0x731532, -2.2 + 0.7 * j, -2.2 + i * 0.2, i - 0.7);
+					addBox(0.5, 0.1, 0.4, 0x635224, -2.2 + 0.7 * j, -2.45 + i * 0.2, i - 0.9);
+				}
+
+				if (i > 0) {
+					addBox(5.5, i * 0.2, 1, ORANGE_NUANCE, 0.2, -2.5 + i * 0.1, i - 1);
+				}
+			}
+
+			addBox(6.2, 3.2, 0.1, "white", 0, 0, -4.5);
+
+			const textureLoader = new THREE.TextureLoader();
+			const texture = textureLoader.load('https://m.media-amazon.com/images/M/MV5BZWI0M2E1ZGMtMjk4Yi00ZGQwLTlkODYtMDYyMGE5N2U2ZDMyXkEyXkFqcGdeQXZ3ZXNsZXk@._V1_QL75_UY281_CR0,0,500,281_.jpg', function (texture) {
+				const geometry = new THREE.PlaneGeometry(6, 3);
+				const material = new THREE.MeshBasicMaterial({ map: texture });
+				const screen = new THREE.Mesh(geometry, material);
+
+				screen.position.set(0, 0, -4.4);
+				scene.add(screen);
+				renderer.render(scene, camera);
+			});
+
+			addBox(8, 0.3, 1.5, ORANGE_NUANCE, 0, -2.4, -4);
+
+			let speakers = [];
+			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, -3.7, 1, -1));
+			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, -3.7, 1, 1));
+			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, -3.7, 1, 2));
+			speakers.forEach(s => s.rotation.set(0, 0, -Math.PI / 15));
+
+			speakers = [];
+			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, 3.7, 1, -1));
+			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, 3.7, 1, 1));
+			speakers.push(addBox(0.3, 0.7, 0.5, SPEAKER_COLOR, 3.7, 1, 2));
+			speakers.forEach(s => s.rotation.set(0, 0, Math.PI / 15));
+
+			addBox(0.2, 3, 8, ORANGE_NUANCE, -2.7, -3, 2.05);
+			const entrance = addBox(0.2, 6, 7.5, ORANGE_NUANCE, -2.7, -3, 2.6);
+			entrance.rotation.set(-Math.PI / 9, 0, 0);
+
+			const light = new THREE.PointLight();
+			light.position.set(0, 0, -4);
+			light.intensity = 4;
+			light.distance = 15;
+			scene.add(light);
+			
+			renderer.render(scene, camera);
+
+			function addBox(w, h, d, color, x = 0, y = 0, z = 0) {
+				const geometry = new THREE.BoxGeometry(w, h, d);
+				const material = new THREE.MeshPhongMaterial({ color });
+				const box = new THREE.Mesh(geometry, material);
+
+				box.position.set(x, y, z);
+				scene.add(box);
+
+				return box;
+			}
+    </script>
+  </body>
+</html>
