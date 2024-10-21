@@ -1,0 +1,102 @@
+﻿<html>
+	<head>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+		<script type="importmap">
+			{ 
+				"imports": {
+					"three": "https://cdn.jsdelivr.net/npm/three@0.164.0/build/three.module.js"
+				} 
+			}
+		</script>
+	</head>
+	<body>
+		<script type="module">
+			import * as THREE from "three";
+			
+			const renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setAnimationLoop(drawFrame);
+			document.body.appendChild(renderer.domElement);
+
+			const scene = new THREE.Scene();
+			scene.background = new THREE.Color("gray");
+			
+			const aspect = window.innerWidth / window.innerHeight;
+			const camera = new THREE.PerspectiveCamera(30, aspect);
+			camera.position.set(0, 0, 30);
+			camera.lookAt(scene.position);
+
+			const radius = 6;
+			const tubeRadius = 1;
+			const boltCircleRadius = radius / 5.5;
+			const boltRadius = radius / 40;
+			
+			class WheelCurve extends THREE.Curve {
+				getPoint(t) {
+					const segmentLength = radius;
+					const functionOffset = 0.19;
+					return new THREE.Vector3(t * segmentLength - segmentLength - functionOffset, 1 / (t * segmentLength - segmentLength - functionOffset), 0);
+				}
+			}
+			
+			const wheel = new THREE.Group();
+
+			let geometry = new THREE.TorusGeometry(radius, tubeRadius, 50, 50);
+			let material = new THREE.MeshPhongMaterial({ color: 0x1f2117 });
+			const ring = new THREE.Mesh(geometry, material);
+			wheel.add(ring);
+
+			geometry = new THREE.TubeGeometry(new WheelCurve(), 600, tubeRadius * 0.8, 16);
+			material = new THREE.MeshPhongMaterial({ color: 0x292f44 });
+			const leftCurve = new THREE.Mesh(geometry, material);
+			wheel.add(leftCurve);
+
+			const rightCurve = leftCurve.clone();
+			rightCurve.rotation.set(0, Math.PI, 0);
+			wheel.add(rightCurve);
+
+			geometry = new THREE.CylinderGeometry(radius / 4, radius / 4, tubeRadius * 1.6, 50);
+			material = new THREE.MeshPhongMaterial({ color: 0xdfdfd7 });
+			const innerCircle = new THREE.Mesh(geometry, material);
+			innerCircle.rotation.set(Math.PI / 2, 0, 0);
+			wheel.add(innerCircle);
+
+			geometry = new THREE.CylinderGeometry(radius / 16, radius / 16, tubeRadius * 1.605, 50);
+			material = new THREE.MeshPhongMaterial({ color: 0xaaa69c });
+			const center = new THREE.Mesh(geometry, material);
+			center.rotation.set(Math.PI / 2, 0, 0);
+			wheel.add(center);
+
+			geometry = new THREE.CylinderGeometry(boltRadius, boltRadius, tubeRadius * 1.605, 50);
+			material = new THREE.MeshPhongMaterial({ color: "black" });
+
+			const bolt1 = new THREE.Mesh(geometry, material);
+			bolt1.rotation.set(Math.PI / 2, 0, 0);
+			bolt1.position.set(-boltCircleRadius * Math.cos(Math.PI / 6), boltCircleRadius * Math.sin(Math.PI / 6), 0);	
+			wheel.add(bolt1);
+
+			const bolt2 = bolt1.clone();
+			bolt1.position.set(boltCircleRadius * Math.cos(Math.PI / 6), boltCircleRadius * Math.sin(Math.PI / 6), 0);	
+			wheel.add(bolt2);
+
+			const bolt3 = bolt1.clone();
+			bolt1.position.set(0, -boltCircleRadius, 0);	
+			wheel.add(bolt3);
+
+			scene.add(wheel);
+
+			const light = new THREE.PointLight('white', 700);
+			light.position.set(0, 0, 20);
+			scene.add(light);
+			
+			function drawFrame(t) {
+				wheel.rotation.x = t / 1000;
+				wheel.rotation.y = t / 1200;
+				renderer.render(scene, camera);
+			}
+		</script>
+	</body>
+</html>
