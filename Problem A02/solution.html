@@ -22,7 +22,7 @@
 			document.body.appendChild(renderer.domElement);
 
 			const scene = new THREE.Scene();
-			scene.background = new THREE.Color("gray");
+			scene.background = new THREE.Color(0x690808);
 			
 			const aspect = window.innerWidth / window.innerHeight;
 			const camera = new THREE.PerspectiveCamera(30, aspect);
@@ -30,14 +30,14 @@
 			camera.lookAt(scene.position);
 
 			const radius = 6;
-			const tubeRadius = 1;
+			const tubeRadius = 0.7;
 			const boltCircleRadius = radius / 5.5;
 			const boltRadius = radius / 40;
 			
 			class WheelCurve extends THREE.Curve {
 				getPoint(t) {
 					const segmentLength = radius;
-					const functionOffset = 0.19;
+					const functionOffset = 0.18;
 					return new THREE.Vector3(t * segmentLength - segmentLength - functionOffset, 1 / (t * segmentLength - segmentLength - functionOffset), 0);
 				}
 			}
@@ -57,6 +57,13 @@
 			const rightCurve = leftCurve.clone();
 			rightCurve.rotation.set(0, Math.PI, 0);
 			wheel.add(rightCurve);
+
+			geometry = new THREE.CylinderGeometry(radius / 8, radius / 8, tubeRadius * 6, 50);
+			material = new THREE.MeshPhongMaterial({ color: "black" });
+			const stick = new THREE.Mesh(geometry, material);
+			stick.rotation.set(Math.PI / 2, 0, 0);
+			stick.position.set(0, 0, -tubeRadius * 3);
+			wheel.add(stick);
 
 			geometry = new THREE.CylinderGeometry(radius / 4, radius / 4, tubeRadius * 1.6, 50);
 			material = new THREE.MeshPhongMaterial({ color: 0xdfdfd7 });
@@ -93,7 +100,6 @@
 			scene.add(light);
 			
 			function drawFrame(t) {
-				wheel.rotation.x = t / 1000;
 				wheel.rotation.y = t / 1200;
 				renderer.render(scene, camera);
 			}
