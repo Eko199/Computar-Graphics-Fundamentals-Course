@@ -1,0 +1,189 @@
+﻿<html>
+	<head>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+		<script type="importmap">
+			{ "imports": {
+				"three": "https://cdn.jsdelivr.net/npm/three@0.164.0/build/three.module.js",
+				"csg/": "https://cdn.jsdelivr.net/gh/looeee/threejs-csg@main/src/CSG/"
+			} }
+		</script>
+	</head>
+	<body>
+		<script type="module">
+		
+			import * as THREE from "three";
+			import {CSG} from "csg/CSG.js";
+			
+			
+			// Задача: конструирайте ... зарче, от дупките
+			// на което струи светлина
+
+			
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setAnimationLoop( drawFrame );
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+			document.body.appendChild( renderer.domElement );
+			
+			var scene = new THREE.Scene();
+			
+			var aspect = window.innerWidth/window.innerHeight;
+			var camera = new THREE.PerspectiveCamera( 30, aspect );
+			camera.position.set( 0, 10, 30 );
+			camera.lookAt( new THREE.Vector3( 0, -2, 0 ) );
+
+			// Основно тяло на зарчето - куб 4х4х4, който ще
+			// трябва да решите как да продупчите
+			let material = new THREE.MeshLambertMaterial();
+			var die = new THREE.Mesh(
+				new THREE.BoxGeometry( 4, 4, 4 ),
+				material
+			);
+			die.castShadow = true;
+
+			const holeRad = 0.4;
+			const holes = [];
+
+			let hole = new THREE.Mesh(new THREE.BoxGeometry( 3.5, 3.5, 3.5 ), material);
+			holes.push(hole);
+
+			const base_hole = new THREE.Mesh(new THREE.SphereGeometry(holeRad, 10), material);
+
+			//1
+			hole = base_hole.clone();
+			hole.position.z = -2;
+			holes.push(hole);
+
+			//6
+			hole = base_hole.clone();
+			hole.position.set(-1, -1, 2);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(0, -1, 2);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(1, -1, 2);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(-1, 1, 2);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(0, 1, 2);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(1, 1, 2);
+			holes.push(hole);
+
+			//2
+			hole = base_hole.clone();
+			hole.position.set(-0.8, 2, -0.8);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(0.8, 2, 0.8);
+			holes.push(hole);
+
+			//5
+			hole = base_hole.clone();
+			hole.position.set(-1, -2, -1);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(1, -2, -1);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(-1, -2, 1);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(1, -2, 1);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(0, -2, 0);
+			holes.push(hole);
+			
+			//4
+			hole = base_hole.clone();
+			hole.position.set(-2, -1, -1);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(-2, 1, -1);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(-2, -1, 1);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(-2, 1, 1);
+			holes.push(hole);
+
+			//5
+			hole = base_hole.clone();
+			hole.position.set(2, -1, -1);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(2, 1, -1);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(2, -1, 1);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(2, 1, 1);
+			holes.push(hole);
+			hole = base_hole.clone();
+			hole.position.set(2, 0, 0);
+			holes.push(hole);
+
+			const csg = new CSG();
+			csg.subtract([die, ...holes]);
+			die = csg.toMesh();
+			scene.add(die);
+
+			die.castShadow = true;
+			
+			// широка платформа, която ще бъде осветявана
+			var geometry = new THREE.BoxGeometry( 100, 1, 100)
+			material = new THREE.MeshPhongMaterial();
+			var platform = new THREE.Mesh( geometry, material );
+			platform.position.set( 0, -5, 0 );
+			platform.receiveShadow = true;
+			scene.add( platform );
+
+			// светлина вътре в куба, свети надолу през
+			// дупките на зарчето - ама трябва вие да си
+			// я сложите на подходящо място
+			var light1 = new THREE.SpotLight( 'white', 25 );
+			light1.position.set( 0, 0, 0 );
+			light1.castShadow = true;
+			light1.target = platform;
+			light1.angle = 1.3;
+			light1.penumbra = 1;
+			scene.add(light1);
+			
+			// втора слаба светлина, която прави жълтото
+			// петно на платформата
+			var light2 = new THREE.SpotLight( 'yellow', 25 ); 
+			light2.position.set( 0, 0.1, 0 );
+			light2.angle = 1.3;
+			light2.penumbra = 1;
+			scene.add( light2 );
+			
+			// трета светлина - отгоре много слаба бяла,
+			// а отдолу по-силна керемидена - нужна ни е,
+			// за да видим външните стени на зарчето
+			var light3 = new THREE.HemisphereLight( 0x202020, 0xA04040 );
+			scene.add( light3 );
+
+			function drawFrame( t )
+			{
+				// въртим зарчето
+				die.rotation.set( t/1000, t/1200, t/1300 );
+
+				light1.color.set(new THREE.Color(`hsl(${(t / 10) % (255 ** 3)}, 100%, 50%)`));
+				
+				renderer.render( scene, camera );
+			}
+			
+		</script>
+	</body>
+</html>
