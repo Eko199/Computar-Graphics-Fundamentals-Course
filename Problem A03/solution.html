@@ -23,18 +23,18 @@
 			document.body.appendChild(renderer.domElement);
 
 			const scene = new THREE.Scene();
-			scene.background = new THREE.Color("darkblue");
+			scene.background = new THREE.Color(0x4a54fc);
 			
 			const aspect = window.innerWidth / window.innerHeight;
 			const camera = new THREE.PerspectiveCamera(30, aspect);
-			camera.position.set(0, 5, 18);
-			camera.lookAt(new THREE.Vector3(0, 1, 0));
+			camera.position.set(2, 4, 16);
+			camera.lookAt(new THREE.Vector3(0, 1.5, 0));
 			
-			const light = new THREE.PointLight('white', 100);
-			light.position.set(0, 8, 6);
+			const light = new THREE.PointLight('white', 50);
+			light.position.set(0, 8, 8);
 			scene.add(light);
 
-			let geometry = new THREE.PlaneGeometry(20, 20);
+			let geometry = new THREE.PlaneGeometry(50, 50);
 			let material = new THREE.MeshPhongMaterial({ color: "green" });
 			const earth = new THREE.Mesh(geometry, material);
 			earth.rotation.x = -Math.PI / 2;
@@ -46,7 +46,7 @@
 			const BASE_SCALE = new THREE.Vector3(2, 2, 5);
 
 			geometry = new THREE.BoxGeometry(BASE_SCALE.x, BASE_SCALE.y, BASE_SCALE.z);
-			material = new THREE.MeshPhongMaterial({ color: "gray" });
+			material = new THREE.MeshPhongMaterial({ color: 0xe3b98f });
 			addToBuilding(geometry, material, 0, BASE_SCALE.y / 2);
 
 			geometry = new THREE.BoxGeometry(BASE_SCALE.x / 2, BASE_SCALE.y + 1.5, 1);
@@ -57,31 +57,43 @@
 			build.add(rightTower);
 
 			//roofs time
-			geometry = new THREE.CylinderGeometry(0, 1 / Math.sqrt(2), 1, 4, 1)
-			const leftRoof = addToBuilding(geometry, material, leftTower.position.x, BASE_SCALE.y + 2, leftTower.position.z, 0, Math.PI / 4);
+			material = new THREE.MeshPhongMaterial({ color: 0x3a3947 });
+			geometry = new THREE.CylinderGeometry(0, 1 / Math.sqrt(2), 2, 4, 1)
+			const leftRoof = addToBuilding(geometry, material, leftTower.position.x, BASE_SCALE.y + 2.5, leftTower.position.z, 0, Math.PI / 4);
 			
 			const rightRoof = leftRoof.clone();
 			rightRoof.position.x = BASE_SCALE.x * 0.75;
 			build.add(rightRoof);
 
+			material = new THREE.MeshPhongMaterial({ color: 0xe3b98f });
 			geometry = new THREE.BoxGeometry(BASE_SCALE.x / Math.sqrt(2) + 0.1, BASE_SCALE.x / Math.sqrt(2) + 0.1, BASE_SCALE.z);
 			addToBuilding(geometry, material, 0, BASE_SCALE.y, 0, 0, 0, Math.PI / 4);
 
 			//windows time
+			const winColor = 0xfbbac0;
 			const baseWindow = new THREE.Group();
-			material = new THREE.MeshPhongMaterial({ color: "pink" });
-			material.emissive = new THREE.Color("pink");
+			material = new THREE.MeshPhongMaterial({ color: winColor });
+			material.emissive = new THREE.Color(winColor);
 			geometry = new THREE.BoxGeometry(BASE_SCALE.x / 3, BASE_SCALE.y / 2, 0.25);
 			baseWindow.add(new THREE.Mesh(geometry, material));
 			
 			geometry = new THREE.CylinderGeometry(BASE_SCALE.x / 6, BASE_SCALE.x / 6, 0.25, 32, 32, false, -Math.PI / 2, Math.PI);
 			baseWindow.add(addToBuilding(geometry, material, 0, BASE_SCALE.y / 4, 0, -Math.PI / 2));
 
-			const winLight = new THREE.PointLight("pink", 5);
+			const winLight = new THREE.PointLight(winColor, 5);
 			baseWindow.add(winLight);
 			baseWindow.position.set(leftTower.position.x, leftTower.position.y + BASE_SCALE.y / 3, leftTower.position.z + leftTower.scale.z / 2 - 0.12);
 			
 			build.add(baseWindow);
+
+			const setWindowColor = (window, color) => {
+				const newMaterial = new THREE.MeshPhongMaterial({ color });
+				newMaterial.emissive = new THREE.Color(color);
+
+				window.children[0].material = newMaterial;
+				window.children[1].material = newMaterial;
+				window.children[2].color = new THREE.Color(color);
+			};
 
 			let newWindow = baseWindow.clone();
 			newWindow.position.x = rightTower.position.x;
@@ -90,6 +102,7 @@
 			newWindow = baseWindow.clone();
 			newWindow.position.set(0, BASE_SCALE.y * 7 / 8, BASE_SCALE.z / 2 - 0.12);
 			newWindow.scale.x = 0.5;
+			setWindowColor(newWindow, 0xa8d5ff);
 			build.add(newWindow);
 
 			newWindow = newWindow.clone();
@@ -98,21 +111,26 @@
 
 			const door = newWindow.clone();
 			door.position.y = BASE_SCALE.x / 8;
-			door.scale.set(1, 0.5, 1);
+			door.scale.set(1, 0.75, 1);
+			door.children[0].material = new THREE.MeshPhongMaterial({ color: 0x7c5244 });
+			door.children[1].material = new THREE.MeshPhongMaterial({ color: 0x7c5244 });
+			door.remove(door.children[2]);
 			build.add(door);
 
 			newWindow = baseWindow.clone();
 			newWindow.position.set(-BASE_SCALE.x / 6 - 0.1, BASE_SCALE.y * 3 / 4, BASE_SCALE.z / 2 - 0.12);
 			newWindow.scale.x = 0.5;
+			setWindowColor(newWindow, 0xffc068);
 			build.add(newWindow);
 
 			newWindow = baseWindow.clone();
 			newWindow.position.set(BASE_SCALE.x / 6 + 0.1, BASE_SCALE.y * 3 / 4, BASE_SCALE.z / 2 - 0.12);
 			newWindow.scale.x = 0.5;
+			setWindowColor(newWindow, 0xffc068);
 			build.add(newWindow);
 
 			//garden time
-			material = new THREE.MeshPhongMaterial({ color: "brown"});
+			material = new THREE.MeshPhongMaterial({ color: 0x7c5244 });
 			geometry = new THREE.BoxGeometry(0.1, 0.5, 4);
 			addToBuilding(geometry, material, leftTower.position.x - leftTower.scale.x / 2, 0.25, BASE_SCALE.z / 2 + 2);
 			addToBuilding(geometry, material, rightTower.position.x + rightTower.scale.x / 2, 0.25, BASE_SCALE.z / 2 + 2);
@@ -120,6 +138,49 @@
 			geometry = new THREE.BoxGeometry((BASE_SCALE.x + rightTower.scale.x + leftTower.scale.x - BASE_SCALE.x / 3) / 2, 0.5, 0.1);
 			addToBuilding(geometry, material, -BASE_SCALE.x / 6 - (BASE_SCALE.x + rightTower.scale.x + leftTower.scale.x - BASE_SCALE.x / 3) / 4, 0.25, BASE_SCALE.z / 2 + 4);
 			addToBuilding(geometry, material, BASE_SCALE.x / 6 + (BASE_SCALE.x + rightTower.scale.x + leftTower.scale.x - BASE_SCALE.x / 3) / 4, 0.25, BASE_SCALE.z / 2 + 4);
+
+			const outerDoor = door.clone();
+			outerDoor.position.set(BASE_SCALE.x / 6, outerDoor.position.y, BASE_SCALE.z / 2 + 4 + BASE_SCALE.x / 6);
+			outerDoor.scale.set(1, 0.5, 0.3);
+			outerDoor.rotation.y = Math.PI / 2;
+			build.add(outerDoor);
+
+			//revolver
+			geometry = new THREE.CylinderGeometry(BASE_SCALE.x / 6, BASE_SCALE.x / 6, 1/12);
+			material = new THREE.MeshPhongMaterial({ color: 0xd0ae58 });
+			const statueBase = new THREE.Mesh(geometry, material);
+			statueBase.position.set(-1, 1/24, BASE_SCALE.z / 2 + 2);
+
+			const revolver = new THREE.Group();
+
+			geometry = new THREE.CylinderGeometry(0.1, 0.15, 0.5, 4);
+			material = new THREE.MeshPhongMaterial({ color: "brown"});
+			const handle = new THREE.Mesh(geometry, material);
+			handle.rotation.set( -Math.PI / 20, -Math.PI / 4, -Math.PI / 10);
+			handle.position.y = 0.25
+			revolver.add(handle);
+			
+			geometry = new THREE.BoxGeometry(0.4, 0.3, 0.2);
+			material = new THREE.MeshPhongMaterial({ color: "gray" });
+			const body = new THREE.Mesh(geometry, material);
+			body.position.set(0.2, 0.5, 0);
+			revolver.add(body);
+			
+			geometry = new THREE.CylinderGeometry(0.15, 0.15, 0.2);
+			const barrel = new THREE.Mesh(geometry, material);
+			barrel.position.set(0.2, 0.5, 0);
+			barrel.rotation.z = Math.PI / 2;
+			revolver.add(barrel);
+			
+			geometry = new THREE.CylinderGeometry(0.08, 0.08, 0.5);
+			const tube = new THREE.Mesh(geometry, material);
+			tube.position.set(0.65, 0.55, 0);
+			tube.rotation.z = Math.PI / 2;
+			revolver.add(tube);
+
+			revolver.rotation.z = Math.PI / 8;
+			statueBase.add(revolver);
+			scene.add(statueBase);
 
 			function addToBuilding(geometry, material, x = 0, y = 0, z = 0, rotX = 0, rotY = 0, rotZ = 0) {
 				const element = new THREE.Mesh(geometry, material);
