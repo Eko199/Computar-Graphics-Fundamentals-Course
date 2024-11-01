@@ -23,15 +23,15 @@
 			document.body.appendChild(renderer.domElement);
 
 			const scene = new THREE.Scene();
-			scene.background = new THREE.Color("skyblue");
+			scene.background = new THREE.Color("darkblue");
 			
 			const aspect = window.innerWidth / window.innerHeight;
 			const camera = new THREE.PerspectiveCamera(30, aspect);
-			camera.position.set(0, 5, 11);
+			camera.position.set(0, 5, 18);
 			camera.lookAt(new THREE.Vector3(0, 1, 0));
 			
-			const light = new THREE.PointLight('white', 400);
-			light.position.set(0, 8, 4);
+			const light = new THREE.PointLight('white', 100);
+			light.position.set(0, 8, 6);
 			scene.add(light);
 
 			let geometry = new THREE.PlaneGeometry(20, 20);
@@ -56,6 +56,7 @@
 			rightTower.position.set(BASE_SCALE.x * 0.75, (BASE_SCALE.y + 1.5) / 2, BASE_SCALE.z / 2 - 0.25);
 			build.add(rightTower);
 
+			//roofs time
 			geometry = new THREE.CylinderGeometry(0, 1 / Math.sqrt(2), 1, 4, 1)
 			const leftRoof = addToBuilding(geometry, material, leftTower.position.x, BASE_SCALE.y + 2, leftTower.position.z, 0, Math.PI / 4);
 			
@@ -63,11 +64,62 @@
 			rightRoof.position.x = BASE_SCALE.x * 0.75;
 			build.add(rightRoof);
 
-			geometry = new THREE.BoxGeometry(BASE_SCALE.x / Math.sqrt(2), BASE_SCALE.x / Math.sqrt(2), BASE_SCALE.z);
+			geometry = new THREE.BoxGeometry(BASE_SCALE.x / Math.sqrt(2) + 0.1, BASE_SCALE.x / Math.sqrt(2) + 0.1, BASE_SCALE.z);
 			addToBuilding(geometry, material, 0, BASE_SCALE.y, 0, 0, 0, Math.PI / 4);
 
-			geometry = new THREE.BoxGeometry(BASE_SCALE.x / 3, BASE_SCALE.y / 4, 1);
-			addToBuilding(geometry, material, leftTower.position.x, leftTower.position.y + BASE_SCALE.y / 8, leftTower.z - leftTower.scale.z / 2);
+			//windows time
+			const baseWindow = new THREE.Group();
+			material = new THREE.MeshPhongMaterial({ color: "pink" });
+			material.emissive = new THREE.Color("pink");
+			geometry = new THREE.BoxGeometry(BASE_SCALE.x / 3, BASE_SCALE.y / 2, 0.25);
+			baseWindow.add(new THREE.Mesh(geometry, material));
+			
+			geometry = new THREE.CylinderGeometry(BASE_SCALE.x / 6, BASE_SCALE.x / 6, 0.25, 32, 32, false, -Math.PI / 2, Math.PI);
+			baseWindow.add(addToBuilding(geometry, material, 0, BASE_SCALE.y / 4, 0, -Math.PI / 2));
+
+			const winLight = new THREE.PointLight("pink", 5);
+			baseWindow.add(winLight);
+			baseWindow.position.set(leftTower.position.x, leftTower.position.y + BASE_SCALE.y / 3, leftTower.position.z + leftTower.scale.z / 2 - 0.12);
+			
+			build.add(baseWindow);
+
+			let newWindow = baseWindow.clone();
+			newWindow.position.x = rightTower.position.x;
+			build.add(newWindow);
+
+			newWindow = baseWindow.clone();
+			newWindow.position.set(0, BASE_SCALE.y * 7 / 8, BASE_SCALE.z / 2 - 0.12);
+			newWindow.scale.x = 0.5;
+			build.add(newWindow);
+
+			newWindow = newWindow.clone();
+			newWindow.scale.x = 0.5;
+			build.add(newWindow);
+
+			const door = newWindow.clone();
+			door.position.y = BASE_SCALE.x / 8;
+			door.scale.set(1, 0.5, 1);
+			build.add(door);
+
+			newWindow = baseWindow.clone();
+			newWindow.position.set(-BASE_SCALE.x / 6 - 0.1, BASE_SCALE.y * 3 / 4, BASE_SCALE.z / 2 - 0.12);
+			newWindow.scale.x = 0.5;
+			build.add(newWindow);
+
+			newWindow = baseWindow.clone();
+			newWindow.position.set(BASE_SCALE.x / 6 + 0.1, BASE_SCALE.y * 3 / 4, BASE_SCALE.z / 2 - 0.12);
+			newWindow.scale.x = 0.5;
+			build.add(newWindow);
+
+			//garden time
+			material = new THREE.MeshPhongMaterial({ color: "brown"});
+			geometry = new THREE.BoxGeometry(0.1, 0.5, 4);
+			addToBuilding(geometry, material, leftTower.position.x - leftTower.scale.x / 2, 0.25, BASE_SCALE.z / 2 + 2);
+			addToBuilding(geometry, material, rightTower.position.x + rightTower.scale.x / 2, 0.25, BASE_SCALE.z / 2 + 2);
+
+			geometry = new THREE.BoxGeometry((BASE_SCALE.x + rightTower.scale.x + leftTower.scale.x - BASE_SCALE.x / 3) / 2, 0.5, 0.1);
+			addToBuilding(geometry, material, -BASE_SCALE.x / 6 - (BASE_SCALE.x + rightTower.scale.x + leftTower.scale.x - BASE_SCALE.x / 3) / 4, 0.25, BASE_SCALE.z / 2 + 4);
+			addToBuilding(geometry, material, BASE_SCALE.x / 6 + (BASE_SCALE.x + rightTower.scale.x + leftTower.scale.x - BASE_SCALE.x / 3) / 4, 0.25, BASE_SCALE.z / 2 + 4);
 
 			function addToBuilding(geometry, material, x = 0, y = 0, z = 0, rotX = 0, rotY = 0, rotZ = 0) {
 				const element = new THREE.Mesh(geometry, material);
