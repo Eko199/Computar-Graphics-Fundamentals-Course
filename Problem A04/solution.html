@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+		<script type="importmap">
+			{ 
+				"imports": {
+					"three": "https://cdn.jsdelivr.net/npm/three@0.164.0/build/three.module.js",
+					"csg/": "https://cdn.jsdelivr.net/gh/looeee/threejs-csg@main/src/CSG/"
+				} 
+			}
+		</script>
+	</head>
+	<body>
+		<script type="module">
+			import * as THREE from "three";
+			import {CSG} from "csg/CSG.js";
+			
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setAnimationLoop(drawFrame);
+			document.body.appendChild(renderer.domElement);
+
+			const scene = new THREE.Scene();
+			scene.background = new THREE.Color(0xc7115b);
+			
+			const aspect = window.innerWidth / window.innerHeight;
+			const camera = new THREE.PerspectiveCamera(30, aspect);
+			camera.position.set(0, 0, 20);
+			camera.lookAt(new THREE.Vector3());
+			
+			const light = new THREE.PointLight('white', 50);
+			light.position.set(0, 8, 8);
+			scene.add(light);
+
+			placeElement(0, 0, 10);
+
+			placeElement(0, 1);
+			placeElement(0, 0.5);
+			placeElement();
+			placeElement(0, -0.5);
+			placeElement(0, -1);
+			placeElement(0, -1.5);
+			placeElement(0.5, -1.5);
+			placeElement(1, -1.5);
+
+			placeElement(3.5, -0.5);
+			placeElement(3, -0.5);
+			placeElement(2.5, -0.5);
+			placeElement(2, -0.5);
+			placeElement(1.5, -0.5);
+
+			placeElement(-1.5, 2, 1);
+
+			const element = createElement(1, 0, 0, Math.PI / 4);
+			element.position.set(-1.5, 2, 0);
+			scene.add(element);
+
+			function placeElement(x = 0, y = 0, scale = 0.5) {
+				const element = createElement(scale);
+				element.position.set(x, y, 0);
+				scene.add(element);
+				return element;
+			}
+			
+			function createElement(scale = 1, rotX = 0, rotY = 0, rotZ = 0) {
+				const geometry = new THREE.BoxGeometry(scale, scale, scale / 10);
+				const material = new THREE.MeshPhongMaterial({ color: "gray" });
+
+				let element = new THREE.Mesh(geometry, material);
+
+				let part = new THREE.Mesh(new THREE.CylinderGeometry(0.4 * scale, 0.4 * scale, 0.1 * scale, 32, 32), material);
+				part.position.z = 0.1 * scale;
+				part.rotation.x = Math.PI / 2;
+
+				const bigHole = new THREE.Mesh(new THREE.CylinderGeometry(0.35 * scale, 0.35 * scale, 0.4 * scale, 32, 32));
+				bigHole.rotation.x = Math.PI / 2;
+
+				const smallHole1 = new THREE.Mesh(new THREE.CylinderGeometry(0.07 * scale, 0.07 * scale, 0.1 * scale, 32, 32));
+				smallHole1.position.set(-0.35 * scale, -0.35 * scale, 0);
+				smallHole1.rotation.x = Math.PI / 2;
+
+				const smallHole2 = smallHole1.clone();
+				smallHole1.position.set(-0.35 * scale, 0.35 * scale, 0);
+				smallHole1.rotation.x = Math.PI / 2;
+
+				const smallHole3 = smallHole1.clone();
+				smallHole1.position.set(0.35 * scale, -0.35 * scale, 0);
+				smallHole1.rotation.x = Math.PI / 2;
+
+				const smallHole4 = smallHole1.clone();
+				smallHole1.position.set(0.35 * scale, 0.35 * scale, 0);
+				smallHole1.rotation.x = Math.PI / 2;
+
+				let csg = new CSG();
+				csg.union([element, part]);
+				csg.subtract([bigHole, smallHole1, smallHole2, smallHole3, smallHole4]);
+
+				element = csg.toMesh();
+				element.rotation.set(rotX, rotY, rotZ);
+
+				return element;
+			}
+			
+			function drawFrame(t) {
+				//scene.rotation.y = t / 1000;
+				renderer.render(scene, camera);
+			}
+		</script>
+	</body>
+</html>
