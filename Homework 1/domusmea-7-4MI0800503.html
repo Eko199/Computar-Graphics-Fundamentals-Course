@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+
+<!-- Виктор Пъжев, група 7, ф.н. 4MI0800503 -->
+
+<html>
+	<head>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+		<script type="importmap">
+			{ 
+				"imports": {
+					"three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+					"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/",
+					"domus-mea": "https://cdn.jsdelivr.net/gh/boytchev/CourseOKG@latest/domus-mea.js",
+					"csg/": "https://cdn.jsdelivr.net/gh/looeee/threejs-csg@main/src/CSG/"
+				} 
+			}
+		</script>
+	</head>
+	
+	<body>
+
+		<script type="module">
+			import * as THREE from "three";
+			import {domusMea, scene, renderer, camera} from "domus-mea";
+			import {CSG} from "csg/CSG.js";
+
+			domusMea( '4MI0800503' ); // факултетен номер 
+			
+			// 1. преименувайте файла на moidom-g-fn.html
+			//    g=номер на група, а fn=факултетен номер
+			//
+			// 2. първо сменете параметъра на domusMea да
+			//    е факултетният ви номер - по този начин
+			//    ще се генерират сцена, земя и контур на
+			//    къщата ви, която ще трябва да направите
+			//
+			// 3. едва тогава почвайте да строите стените
+			//    и да добавяте исканите обекти по стаите
+			//
+			// 4. кубът по-долу е само за пример как може
+			//    да се слагат обекти, които правят сянка
+			//
+			// 5. едно зелено квадратче е широко 1 метър,
+			//    а белите квадратчета са големи по 20 см
+			//
+			// 6. горд съм как коментарите са равно дълги
+
+			const smallTile = 0.2;
+			scene.add(createToaster(0, 1, 0));
+			
+			function createToaster(x = 0, y = 0, z = 0, scale = 1, rotX = 0, rotY = 0, rotZ = 0) {
+				const geometry = new THREE.BoxGeometry(smallTile, smallTile * 0.3, smallTile * 0.5);
+				const material = new THREE.MeshPhongMaterial({ color: 'silver' });
+
+				let toaster = new THREE.Mesh(geometry, material);
+
+				const upper = new THREE.Mesh(new THREE.CylinderGeometry(smallTile * 0.5, smallTile * 0.5, smallTile * 0.5, 32, 32), material);
+				upper.rotation.x = Math.PI / 2;
+				upper.position.y = smallTile * 0.15;
+				upper.scale.z = 0.3;
+
+				const hole1 = new THREE.Mesh(new THREE.BoxGeometry(smallTile * 0.8, smallTile * 0.3, smallTile * 0.09));
+				hole1.position.y = smallTile * 0.15;
+				hole1.position.z = smallTile * 0.1;
+
+				const hole2 = hole1.clone();
+				hole1.position.y = smallTile * 0.15;
+				hole1.position.z = -smallTile * 0.1;
+
+				const csg = new CSG();
+				csg.union([toaster, upper]);
+				csg.subtract([hole1, hole2]);
+				toaster = csg.toMesh();
+
+				const button = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile * 0.1, smallTile * 0.1, smallTile * 0.05, 32, 32), 
+					new THREE.MeshPhongMaterial({ color: 'black' }));
+				button.position.set(smallTile * 0.5, smallTile * 0.1, 0);
+				button.scale.z = 0.8;
+				toaster.add(button)
+
+				toaster.position.set(x, y + smallTile * 0.15, z);
+				toaster.rotation.set(rotX, rotY, rotZ);
+				toaster.scale.set(scale, scale, scale);
+
+				toaster.receiveShadow = true;
+				toaster.castShadow = true;
+
+				return toaster;
+			}
+		</script>
+		
+	</body>
+</html>
+
+
