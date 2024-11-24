@@ -49,7 +49,8 @@
 			// 6. горд съм как коментарите са равно дълги
 
 			const smallTile = 0.2;
-			scene.add(createToaster(0, 1, 0));
+
+			scene.add(createMirror());
 			
 			function createToaster(x = 0, y = 0, z = 0, scale = 1, rotX = 0, rotY = 0, rotZ = 0) {
 				const geometry = new THREE.BoxGeometry(smallTile, smallTile * 0.3, smallTile * 0.5);
@@ -80,16 +81,109 @@
 					new THREE.MeshPhongMaterial({ color: 'black' }));
 				button.position.set(smallTile * 0.5, smallTile * 0.1, 0);
 				button.scale.z = 0.8;
-				toaster.add(button)
+				button.receiveShadow = true;
+				button.castShadow = true;
+				toaster.add(button);
 
-				toaster.position.set(x, y + smallTile * 0.15, z);
+				const lower = new THREE.Mesh(
+					new THREE.BoxGeometry(smallTile * 1.02, smallTile * 0.1, smallTile * 0.5 * 1.02), 
+					new THREE.MeshPhongMaterial({ color: 'black' }));
+				lower.position.y = smallTile * 0.05 - smallTile * 0.15;
+				lower.receiveShadow = true;
+				lower.castShadow = true;
+				toaster.add(lower);
+
 				toaster.rotation.set(rotX, rotY, rotZ);
+				toaster.position.set(x, y + smallTile * 0.15 * scale, z);
 				toaster.scale.set(scale, scale, scale);
 
 				toaster.receiveShadow = true;
 				toaster.castShadow = true;
 
 				return toaster;
+			}
+
+			function createMirror(x = 0, y = 0, z = 0, scale = 1, rotX = 0, rotY = 0, rotZ = 0) {
+				const width = 3 * smallTile, height = 1.8;
+				const mirrorShape = new THREE.Shape();
+
+				mirrorShape.moveTo(0, width / 4, 0);
+				mirrorShape.lineTo(0, height - 0.5, 0);
+				mirrorShape.arc(width / 2, 0, width / 2, Math.PI, 0, true);
+				mirrorShape.lineTo(width, width / 4, 0);
+				mirrorShape.arc(-width / 4, 0, width / 4, 0, -Math.PI / 2, true);
+				mirrorShape.lineTo(width / 4, 0, 0);
+				mirrorShape.arc(0, width / 4, width / 4, -Math.PI / 2, -Math.PI + 0.1, true);
+
+				let geometry = new THREE.ExtrudeGeometry(mirrorShape, { 
+					depth: 0.01, 
+					bevelEnabled: true, 
+					bevelSegments: 2, 
+					steps: 2, 
+					bevelSize: 0.01, 
+					bevelThickness: 0.01 
+				});
+
+				const material = new THREE.MeshPhongMaterial({ color: "silver" });
+
+				const mirror = new THREE.Mesh(geometry, material);
+
+				const reflection = mirror.clone();
+				reflection.material = new THREE.MeshBasicMaterial({ color: 0xefefef });
+
+				const offset = 0.95;
+				reflection.scale.set(offset, offset, offset);
+				reflection.position.set(width * (1 - offset) / 2, height * (1 - offset) / 2, 0.005);
+				mirror.add(reflection);
+
+				mirror.rotation.x = -Math.PI / 12;
+
+				const standShape = new THREE.Shape();
+				standShape.moveTo(0, height / 2, 0);
+				standShape.lineTo(0, width / 4, 0);
+				standShape.arc(width / 4, 0, width / 4, Math.PI + 0.1, Math.PI * 1.5);
+				standShape.lineTo(width * 3/4, 0, 0);
+				standShape.arc(0, width / 4, width / 4, -Math.PI / 2, 0);
+				standShape.lineTo(width, height / 2, 0);
+				
+				const removeShape = new THREE.Shape(), standWidth = smallTile / 10, barY = height / 3;
+				removeShape.moveTo(standWidth, barY - standWidth / 2, 0);
+				removeShape.lineTo(standWidth, width / 4 + standWidth, 0);
+				removeShape.arc(width / 4, 0, width / 4, Math.PI + 0.1, Math.PI * 1.5);
+				removeShape.lineTo(width * 3/4 - standWidth, standWidth, 0);
+				removeShape.arc(0, width / 4, width / 4, -Math.PI / 2 + 0.1, 0);
+				removeShape.lineTo(width - standWidth, barY - standWidth / 2, 0);
+				
+				const removeShape2 = new THREE.Shape();
+				removeShape2.moveTo(standWidth, height / 2 - standWidth, 0);
+				removeShape2.lineTo(standWidth, barY + standWidth / 2, 0);
+				removeShape2.lineTo(width - standWidth, barY + standWidth / 2, 0);
+				removeShape2.lineTo(width - standWidth, height / 2 - standWidth, 0);
+
+				standShape.holes.push(removeShape, removeShape2);
+				
+				geometry = new THREE.ExtrudeGeometry(standShape, { 
+					depth: 0.01, 
+					bevelEnabled: true, 
+					bevelSegments: 2, 
+					steps: 2, 
+					bevelSize: 0.01, 
+					bevelThickness: 0.01 
+				});
+
+				const stand = new THREE.Mesh(geometry, material);
+				stand.rotation.x = -mirror.rotation.x * 2;
+				stand.position.set(0, height / 2 * (1 - Math.cos(Math.PI / 6)), -height * Math.sin(Math.PI / 12));
+
+				mirror.add(stand);
+
+				const mirrorGroup = new THREE.Group();
+				mirrorGroup.add(mirror);
+				mirrorGroup.position.set(x, y, z);
+				mirrorGroup.scale.set(scale, scale, scale);
+				mirrorGroup.rotation.set(rotX, rotY, rotZ);
+
+				return mirrorGroup;
 			}
 		</script>
 		
