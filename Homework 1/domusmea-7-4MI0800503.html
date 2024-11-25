@@ -49,8 +49,71 @@
 			// 6. горд съм как коментарите са равно дълги
 
 			const smallTile = 0.2;
+			const wallMaterial = new THREE.MeshPhongMaterial({ color: 0x99b084 });
 
-			scene.add(createMirror());
+			const walls = [
+				createWall(-2.5 * smallTile, 5 - smallTile / 2, smallTile, 13),
+				createWall(-2.5 * smallTile - 4, smallTile / 2 - 1, smallTile, 5),
+				createWall(1, smallTile / 2 - 7, smallTile, 6),
+				createWall(5, smallTile / 2 - 1, smallTile, 2),
+				createWall(smallTile / 2 - 7, 2, 6, smallTile),
+				createWall(6 - smallTile / 2, 2, 6, smallTile),
+				createWall(4 - smallTile / 2, smallTile - 4, 6, smallTile),
+				createWall(smallTile / 2 - 2, smallTile - 4, 6, smallTile),
+				createWall(3 - smallTile / 4, smallTile / 2 - 5, smallTile, 2 + smallTile / 2),
+				createWall(-1 + smallTile / 4, smallTile / 2 - 3, smallTile, 2 + smallTile / 2),
+				createWall(1, smallTile / 2 - 4, smallTile * Math.sqrt(2), 2 * Math.sqrt(2), Math.PI / 4),
+				createWall(-2.5 * smallTile - 5, smallTile / 2 + 2, smallTile, 3),
+				createWall(3 + smallTile / 2 - 7, 2, 6, smallTile),
+				createCircularWall(4, 1, 2, smallTile, Math.PI),
+				createWall(9 + smallTile / 2 - 7, 3, 4, smallTile),
+			];
+
+			walls.forEach(w => scene.add(w));
+
+			// const light = new THREE.PointLight();
+			// light.position.set(0, 1, -3)
+			// scene.add(light)
+
+			function createWall(x, z, width, length, rot = 0) {
+				const wall = new THREE.Mesh(
+					new THREE.BoxGeometry(length, 2.4, width),
+					wallMaterial
+				);
+
+				wall.position.set(x, 1.1, z);
+				wall.rotation.y = rot;
+				
+				wall.receiveShadow = true;
+				wall.castShadow = true;
+
+				return wall;
+			}
+
+			function createCircularWall(x, z, r, width, rot = 0) {
+				let wall = new THREE.Mesh(
+					new THREE.CylinderGeometry(r, r, 2.4, 32, 1, false, 0, Math.PI / 2),
+					wallMaterial
+				);
+
+				const wallHole = new THREE.Mesh(
+					new THREE.CylinderGeometry(r - width, r - width, 2.4, 32, 1, false, 0, Math.PI / 2),
+					wallMaterial
+				);
+
+				const csg = new CSG();
+				csg.subtract([wall, wallHole]);
+				wall = csg.toMesh();
+
+
+				wall.position.set(x, 1.1, z);
+				wall.rotation.y = rot;
+				
+				wall.receiveShadow = true;
+				wall.castShadow = true;
+
+				return wall;
+			}
 			
 			function createToaster(x = 0, y = 0, z = 0, scale = 1, rotX = 0, rotY = 0, rotZ = 0) {
 				const geometry = new THREE.BoxGeometry(smallTile, smallTile * 0.3, smallTile * 0.5);
@@ -175,7 +238,13 @@
 				stand.rotation.x = -mirror.rotation.x * 2;
 				stand.position.set(0, height / 2 * (1 - Math.cos(Math.PI / 6)), -height * Math.sin(Math.PI / 12));
 
+				stand.receiveShadow = true;
+				stand.castShadow = true;
+
 				mirror.add(stand);
+
+				mirror.receiveShadow = true;
+				mirror.castShadow = true;
 
 				const mirrorGroup = new THREE.Group();
 				mirrorGroup.add(mirror);
