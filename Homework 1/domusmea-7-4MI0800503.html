@@ -49,9 +49,9 @@
 			// 6. горд съм как коментарите са равно дълги
 
 			const smallTile = 0.2;
-			const wallMaterial = new THREE.MeshPhongMaterial({ color: 0x99b084 });
+			const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xc4d6b3 });
 
-			const walls = [
+			let walls = [
 				createWall(-2.5 * smallTile, 5 - smallTile / 2, smallTile, 13),
 				createWall(-2.5 * smallTile - 4, smallTile / 2 - 1, smallTile, 5),
 				createWall(1, smallTile / 2 - 7, smallTile, 6),
@@ -74,16 +74,25 @@
 			const doorsAndWindows = [
 				createDoor(-1, -3 + smallTile / 2),
 				createDoor(-1, -7 + smallTile / 2),
-				createDoor(-4 + smallTile / 2, 1, -Math.PI / 2),
-				createDoor(-4 + smallTile / 2, 3.5, -Math.PI / 2),
-				createDoor(2 + smallTile / 2, 3.5, Math.PI / 2),
+				createDoor(-4 + smallTile / 2, 1, -Math.PI / 2, 0),
+				createDoor(-4 + smallTile / 2, 3.5, -Math.PI / 2, -Math.PI / 6),
+				createDoor(2 + smallTile / 2, 3.5, Math.PI / 2, -Math.PI / 2),
+				createWindow(2, -7 + smallTile / 2),
+				createWindow(-5.5, -1 + smallTile / 2, 0, 1.5),
+				createWindow(-5.5, 5 - smallTile / 2, 0, 1.5),
+				createWindow(-0.5, 5 - smallTile / 2, 0, 3, 1.3, 1/3),
+				createWindow(6 - smallTile / 2, 2, Math.PI / 2, 2),
 			];
 
 			const csg = new CSG();
 			csg.union(walls);
 			csg.subtract(doorsAndWindows.map(dw => dw[1]));
+			walls = csg.toMesh();
 
-			scene.add(csg.toMesh());
+			walls.receiveShadow = true;
+			walls.castShadow = true;
+
+			scene.add(walls);
 			doorsAndWindows.forEach(dw => scene.add(dw[0]));
 
 			// const light = new THREE.PointLight();
@@ -192,6 +201,49 @@
 				doorframe.castShadow = true;
 
 				return [doorframe, doorSpace];
+			}
+
+			function createWindow(x = 0, z = 0, rot = 0, width = 2, height = 1.3, separatorRatio = 0, frameWidth = 0.1, heightOffset = 1) {
+				const windowSpace = new THREE.Mesh(
+					new THREE.BoxGeometry(width + frameWidth * 2, height + frameWidth * 2, smallTile * 1.1),
+					new THREE.MeshPhongMaterial({ color: "gray" })
+				);
+				
+				const window = new THREE.Mesh(
+					new THREE.BoxGeometry(width, height, smallTile * 1.1),
+					new THREE.MeshPhongMaterial({ color: "cyan", transparent: true, opacity: 0.5 })
+				);
+
+				window.receiveShadow = true;
+				window.castShadow = true;
+
+				const csg = new CSG();
+				csg.subtract([windowSpace, window]);
+				const windowFrame = csg.toMesh();
+
+				window.scale.z = 0.5;
+				windowFrame.add(window);
+
+				if (separatorRatio > 0) {
+					const separator = new THREE.Mesh(
+						new THREE.BoxGeometry(smallTile * 0.65, height, smallTile * 1.1),
+						new THREE.MeshPhongMaterial({ color: "gray" })
+					);
+
+					separator.position.x = width * (separatorRatio - 0.5);
+					windowFrame.add(separator);
+				}
+
+				windowFrame.position.set(x, height / 2 + heightOffset, z);
+				windowSpace.position.set(x, height / 2 + heightOffset, z);
+
+				windowFrame.rotation.y = rot;
+				windowSpace.rotation.y = rot;
+
+				windowFrame.receiveShadow = true;
+				windowFrame.castShadow = true;
+
+				return [windowFrame, windowSpace];
 			}
 			
 			function createToaster(x = 0, y = 0, z = 0, scale = 1, rotX = 0, rotY = 0, rotZ = 0) {
