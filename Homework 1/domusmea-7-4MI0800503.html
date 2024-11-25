@@ -65,23 +65,38 @@
 				createWall(1, smallTile / 2 - 4, smallTile * Math.sqrt(2), 2 * Math.sqrt(2), Math.PI / 4),
 				createWall(-2.5 * smallTile - 5, smallTile / 2 + 2, smallTile, 3),
 				createWall(3 + smallTile / 2 - 7, 2, 6, smallTile),
-				createCircularWall(4, 1, 2, smallTile, Math.PI),
-				createWall(9 + smallTile / 2 - 7, 3, 4, smallTile),
+				createWall(9 + smallTile / 2 - 7, 3, 4, smallTile)
 			];
 
-			walls.forEach(w => scene.add(w));
+			//special wall
+			scene.add(createCircularWall(4, 1, 2, smallTile, Math.PI));
+
+			const doorsAndWindows = [
+				createDoor(-1, -3 + smallTile / 2),
+				createDoor(-1, -7 + smallTile / 2),
+				createDoor(-4 + smallTile / 2, 1, -Math.PI / 2),
+				createDoor(-4 + smallTile / 2, 3.5, -Math.PI / 2),
+				createDoor(2 + smallTile / 2, 3.5, Math.PI / 2),
+			];
+
+			const csg = new CSG();
+			csg.union(walls);
+			csg.subtract(doorsAndWindows.map(dw => dw[1]));
+
+			scene.add(csg.toMesh());
+			doorsAndWindows.forEach(dw => scene.add(dw[0]));
 
 			// const light = new THREE.PointLight();
 			// light.position.set(0, 1, -3)
 			// scene.add(light)
 
-			function createWall(x, z, width, length, rot = 0) {
+			function createWall(x, z, width, length, rot = 0, height = 3) {
 				const wall = new THREE.Mesh(
-					new THREE.BoxGeometry(length, 2.4, width),
+					new THREE.BoxGeometry(length, height, width),
 					wallMaterial
 				);
 
-				wall.position.set(x, 1.1, z);
+				wall.position.set(x, height / 2 - 0.1, z);
 				wall.rotation.y = rot;
 				
 				wall.receiveShadow = true;
@@ -90,14 +105,14 @@
 				return wall;
 			}
 
-			function createCircularWall(x, z, r, width, rot = 0) {
+			function createCircularWall(x, z, r, width, rot = 0, height = 3) {
 				let wall = new THREE.Mesh(
-					new THREE.CylinderGeometry(r, r, 2.4, 32, 1, false, 0, Math.PI / 2),
+					new THREE.CylinderGeometry(r, r, height, 32, 1, false, 0, Math.PI / 2),
 					wallMaterial
 				);
 
 				const wallHole = new THREE.Mesh(
-					new THREE.CylinderGeometry(r - width, r - width, 2.4, 32, 1, false, 0, Math.PI / 2),
+					new THREE.CylinderGeometry(r - width, r - width, height, 32, 1, false, 0, Math.PI / 2),
 					wallMaterial
 				);
 
@@ -106,13 +121,77 @@
 				wall = csg.toMesh();
 
 
-				wall.position.set(x, 1.1, z);
+				wall.position.set(x, height / 2 - 0.1, z);
 				wall.rotation.y = rot;
 				
 				wall.receiveShadow = true;
 				wall.castShadow = true;
 
 				return wall;
+			}
+			
+			function createDoor(x = 0, z = 0, rot = 0, openAngle = -Math.PI / 2.5, height = 2, width = 0.8) {
+				const doorSpace = new THREE.Mesh(
+					new THREE.BoxGeometry(width * 1.4, height * 1.2, smallTile * 1.2),
+					new THREE.MeshPhongMaterial({ color: "gray" })
+				);
+				
+				const door = new THREE.Mesh(
+					new THREE.BoxGeometry(width, height, smallTile * 1.2),
+					new THREE.MeshPhongMaterial({ color: 0xc47f4d })
+				);
+
+				door.receiveShadow = true;
+				door.castShadow = true;
+
+				const csg = new CSG();
+				csg.subtract([doorSpace, door]);
+				const doorframe = csg.toMesh();
+
+				const handleBase = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile / 6, smallTile / 6, smallTile * 1.5, 32),
+					new THREE.MeshPhongMaterial({ color: "silver" })
+				);
+
+				handleBase.position.set(width / 3, height / 10, 0);
+				handleBase.rotation.x = Math.PI / 2;
+				handleBase.receiveShadow = true;
+				handleBase.castShadow = true;
+
+				const handle = new THREE.Mesh(
+					new THREE.SphereGeometry(smallTile / 4, 32, 32),
+					new THREE.MeshPhongMaterial({ color: "silver" })
+				);
+
+				handle.position.set(width / 3, height / 10, smallTile * 1.1);
+				handle.scale.z = 2;
+				handle.receiveShadow = true;
+				handle.castShadow = true;
+
+				const handle2 = handle.clone();
+				handle2.position.z = -smallTile * 1.1;
+				handle2.receiveShadow = true;
+				handle2.castShadow = true;
+
+				door.add(handleBase, handle, handle2);
+
+				door.scale.z /= 2;
+
+				door.rotation.y = openAngle;
+				door.position.set(width / 2 * (Math.cos(openAngle) - 1), 0, -width / 2 * Math.sin(openAngle));
+
+				doorframe.add(door);
+
+				doorframe.position.set(x, height / 2 - 0.1, z);
+				doorSpace.position.set(x, height / 2 - 0.1, z);
+
+				doorframe.rotation.y = rot;
+				doorSpace.rotation.y = rot;
+
+				doorframe.receiveShadow = true;
+				doorframe.castShadow = true;
+
+				return [doorframe, doorSpace];
 			}
 			
 			function createToaster(x = 0, y = 0, z = 0, scale = 1, rotX = 0, rotY = 0, rotZ = 0) {
