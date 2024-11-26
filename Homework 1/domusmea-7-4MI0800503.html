@@ -81,7 +81,8 @@
 				createWindow(-5.5, -1 + smallTile / 2, 0, 1.5),
 				createWindow(-5.5, 5 - smallTile / 2, 0, 1.5),
 				createWindow(-0.5, 5 - smallTile / 2, 0, 3, 1.3, 1/3),
-				createWindow(6 - smallTile / 2, 2, Math.PI / 2, 2),
+				createWindow(6 - smallTile / 2, 2, Math.PI / 2),
+				createWindow(2 + smallTile / 2, 2 - smallTile, Math.PI / 2, 1, 2, 0, 0.5)
 			];
 
 			const csg = new CSG();
@@ -95,9 +96,15 @@
 			scene.add(walls);
 			doorsAndWindows.forEach(dw => scene.add(dw[0]));
 
+			scene.add(createTable(3 + 1.5 * smallTile, -3));
+			scene.add(createToaster(3 + smallTile, 0.7 + smallTile / 4, -3, 1.8, 0, -Math.PI / 3, 0, "pink"));
+
 			// const light = new THREE.PointLight();
-			// light.position.set(0, 1, -3)
-			// scene.add(light)
+			// light.position.set(2, 2, -2);
+			// light.intensity = 1;
+			// light.decay = 0.1;
+			// light.castShadow = true;
+			// scene.add(light);
 
 			function createWall(x, z, width, length, rot = 0, height = 3) {
 				const wall = new THREE.Mesh(
@@ -203,7 +210,7 @@
 				return [doorframe, doorSpace];
 			}
 
-			function createWindow(x = 0, z = 0, rot = 0, width = 2, height = 1.3, separatorRatio = 0, frameWidth = 0.1, heightOffset = 1) {
+			function createWindow(x = 0, z = 0, rot = 0, width = 2, height = 1.3, separatorRatio = 0, heightOffset = 1, frameWidth = 0.1) {
 				const windowSpace = new THREE.Mesh(
 					new THREE.BoxGeometry(width + frameWidth * 2, height + frameWidth * 2, smallTile * 1.1),
 					new THREE.MeshPhongMaterial({ color: "gray" })
@@ -246,9 +253,9 @@
 				return [windowFrame, windowSpace];
 			}
 			
-			function createToaster(x = 0, y = 0, z = 0, scale = 1, rotX = 0, rotY = 0, rotZ = 0) {
+			function createToaster(x = 0, y = 0, z = 0, scale = 1, rotX = 0, rotY = 0, rotZ = 0, color = "silver") {
 				const geometry = new THREE.BoxGeometry(smallTile, smallTile * 0.3, smallTile * 0.5);
-				const material = new THREE.MeshPhongMaterial({ color: 'silver' });
+				const material = new THREE.MeshPhongMaterial({ color, shininess: 50, specular: color });
 
 				let toaster = new THREE.Mesh(geometry, material);
 
@@ -273,7 +280,7 @@
 				const button = new THREE.Mesh(
 					new THREE.CylinderGeometry(smallTile * 0.1, smallTile * 0.1, smallTile * 0.05, 32, 32), 
 					new THREE.MeshPhongMaterial({ color: 'black' }));
-				button.position.set(smallTile * 0.5, smallTile * 0.1, 0);
+				button.position.set(-smallTile * 0.5, smallTile * 0.1, 0);
 				button.scale.z = 0.8;
 				button.receiveShadow = true;
 				button.castShadow = true;
@@ -286,6 +293,68 @@
 				lower.receiveShadow = true;
 				lower.castShadow = true;
 				toaster.add(lower);
+
+				class WireCurve extends THREE.Curve {
+					constructor(height, scale = 0.1) {
+						super();
+						this.scale = scale;
+						this.finalY = -height / scale;
+					}
+
+					getPoint(t, optionalTarget = new THREE.Vector3()) {
+
+						const tx = t * 2;
+						const ty = t * this.finalY;
+						const tz = -1 * (tx - 0.5) ** 2;
+
+						//rotate the parabol
+						const ang = -Math.PI / 2;
+						const x = Math.cos(ang) * tx - Math.sin(ang) * tz;
+						const z = Math.sin(ang) * tx + Math.cos(ang) * tz;
+
+						return optionalTarget.set(x, ty, z).multiplyScalar(this.scale);
+					}
+				}
+
+				const wirePath = new WireCurve(smallTile * 0.1);
+				const wire = new THREE.Mesh(
+					new THREE.TubeGeometry(wirePath, 60, smallTile / 32, 20),
+					new THREE.MeshPhongMaterial({ color: "white" })
+				);
+
+				wire.position.x = smallTile / 1.7;
+
+				wire.castShadow = true;
+				wire.receiveShadow = true;
+
+				const adapter = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile / 16, smallTile / 16, smallTile / 12, 32),
+					new THREE.MeshPhongMaterial({ color: "silver" })
+				);
+
+				adapter.castShadow = true;
+				adapter.receiveShadow = true;
+
+				let pin = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile / 128, smallTile / 128, smallTile / 16, 32),
+					new THREE.MeshPhongMaterial({ color: 0xa4532d, shininess: 50, specular: 0xa4532d })
+				);
+
+				pin.castShadow = true;
+				pin.receiveShadow = true;
+				pin.position.set(smallTile / 32, smallTile / 24 + smallTile / 32, 0);
+				adapter.add(pin);
+
+				pin = pin.clone();
+				pin.position.set(-smallTile / 32, smallTile / 24 + smallTile / 32, 0);
+				adapter.add(pin);
+
+				adapter.rotation.set(Math.PI / 2, 0, Math.PI / 1.7);
+				adapter.position.add(wirePath.getPoint(1));
+				adapter.scale.z = 0.7;
+				wire.add(adapter);
+
+				toaster.add(wire);
 
 				toaster.rotation.set(rotX, rotY, rotZ);
 				toaster.position.set(x, y + smallTile * 0.15 * scale, z);
@@ -384,6 +453,45 @@
 				mirrorGroup.rotation.set(rotX, rotY, rotZ);
 
 				return mirrorGroup;
+			}
+		
+			function createTable(x = 0, z = 0, rot = 0, width = 1, length = 2, height = 0.7) {
+				const material = new THREE.MeshPhongMaterial({ color: 0xccb8a4 });
+
+				const table = new THREE.Mesh(
+					new THREE.BoxGeometry(width, smallTile / 2, length),
+					material
+				);
+
+				table.receiveShadow = true;
+				table.castShadow = true;
+
+				let leg = new THREE.Mesh(
+					new THREE.BoxGeometry(smallTile / 2, height, smallTile / 2),
+					material
+				);
+
+				leg.receiveShadow = true;
+				leg.castShadow = true;
+
+				leg.position.set(-width / 2 + smallTile / 2, -height / 2, -length / 2 + smallTile / 2);
+				table.add(leg);
+
+				leg = leg.clone();
+				leg.position.set(-width / 2 + smallTile / 2, -height / 2, length / 2 - smallTile / 2);
+				table.add(leg);
+
+				leg = leg.clone();
+				leg.position.set(width / 2 - smallTile / 2, -height / 2, -length / 2 + smallTile / 2);
+				table.add(leg);
+
+				leg = leg.clone();
+				leg.position.set(width / 2 - smallTile / 2, -height / 2, length / 2 - smallTile / 2);
+				table.add(leg);
+
+				table.position.set(x, height, z);
+				table.rotation.y = rot;
+				return table;
 			}
 		</script>
 		
