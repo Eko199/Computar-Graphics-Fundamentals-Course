@@ -99,12 +99,13 @@
 			scene.add(createTable(3 + 1.5 * smallTile, -3));
 			scene.add(createToaster(3 + smallTile, 0.7 + smallTile / 4, -3, 1.8, 0, -Math.PI / 3, 0, "pink"));
 
-			// const light = new THREE.PointLight();
-			// light.position.set(2, 2, -2);
-			// light.intensity = 1;
-			// light.decay = 0.1;
-			// light.castShadow = true;
-			// scene.add(light);
+			//bathroom
+			scene.add(createToilet(4, 0, 2 - smallTile, -Math.PI / 2));
+			scene.add(createMirror(3, 0, 1 - smallTile, Math.PI / 6));
+			scene.add(createMirror(4, 0, 1 - smallTile));
+			scene.add(createMirror(5, 0, 1 - smallTile, -Math.PI / 3));
+			scene.add(createMirror(5, 0, 3 - smallTile, Math.PI + Math.PI / 6));
+			scene.add(createMirror(3, 0, 3 - smallTile, Math.PI + -Math.PI / 3));
 
 			function createWall(x, z, width, length, rot = 0, height = 3) {
 				const wall = new THREE.Mesh(
@@ -305,7 +306,7 @@
 
 						const tx = t * 2;
 						const ty = t * this.finalY;
-						const tz = -1 * (tx - 0.5) ** 2;
+						const tz = -1 * (tx - smallTile * 2.5) ** 2;
 
 						//rotate the parabol
 						const ang = -Math.PI / 2;
@@ -366,7 +367,7 @@
 				return toaster;
 			}
 
-			function createMirror(x = 0, y = 0, z = 0, scale = 1, rotX = 0, rotY = 0, rotZ = 0) {
+			function createMirror(x = 0, y = 0, z = 0, rot = 0, scale = 1) {
 				const width = 3 * smallTile, height = 1.8;
 				const mirrorShape = new THREE.Shape();
 
@@ -450,7 +451,7 @@
 				mirrorGroup.add(mirror);
 				mirrorGroup.position.set(x, y, z);
 				mirrorGroup.scale.set(scale, scale, scale);
-				mirrorGroup.rotation.set(rotX, rotY, rotZ);
+				mirrorGroup.rotation.y = rot;
 
 				return mirrorGroup;
 			}
@@ -492,6 +493,100 @@
 				table.position.set(x, height, z);
 				table.rotation.y = rot;
 				return table;
+			}
+		
+			function createToilet(x = 0, y = 0, z = 0, rot = 0, scale = 1) {
+				const material = new THREE.MeshPhongMaterial({ color: "white", shininess: 50, specular: "white", side: THREE.DoubleSide });
+
+				const stand = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile / 2, smallTile, smallTile * 1.5, 32),
+					material
+				);
+
+				stand.castShadow = true;
+				stand.receiveShadow = true;
+
+				const toilet = new THREE.Mesh(
+					new THREE.SphereGeometry(smallTile, 32, 32, 0, Math.PI * 2, -Math.PI, Math.PI / 2),
+					material
+				);
+
+				toilet.position.y = smallTile * (1 + 0.75 - 0.15);
+				toilet.castShadow = true;
+				toilet.receiveShadow = true;
+
+				const water = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile * 0.8, smallTile * 0.1, smallTile * 0.6, 32),
+					new THREE.MeshPhongMaterial({ color: "blue", transparent: true, opacity: 0.7 })
+				);
+
+				water.position.y = -smallTile * 0.8;
+				toilet.add(water);
+
+				const seat = new THREE.Mesh(
+					new THREE.TorusGeometry(smallTile, smallTile / 4, 32, 32),
+					material
+				);
+
+				seat.rotation.x = Math.PI / 2;
+				seat.scale.z = 0.5;
+				seat.castShadow = true;
+				seat.receiveShadow = true;
+				toilet.add(seat);
+
+				const tank = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile * 1.5, smallTile, smallTile * 2.2, 5),
+					material
+				);
+
+				tank.rotation.y = Math.PI;
+				tank.scale.z = 0.2;
+				tank.position.set(0, smallTile, -smallTile * 1.25);
+				tank.receiveShadow = true;
+				tank.castShadow = true;
+
+				const button = new THREE.Mesh(
+					new THREE.BoxGeometry(smallTile / 3, smallTile / 16, smallTile / 2),
+					material
+				);
+
+				button.position.set(-smallTile * 1.2, smallTile * 0.7, 0);
+				button.receiveShadow = true;
+				button.castShadow = true;
+				tank.add(button);
+
+				toilet.add(tank);
+
+				const pipe = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile / 4, smallTile / 4, smallTile / 1.5, 20),
+					material
+				);
+
+				pipe.rotation.x = -Math.PI / 7;
+				pipe.scale.z = 0.5;
+				pipe.position.set(0, -smallTile * 0.3, -smallTile * 1.105);
+				pipe.receiveShadow = true;
+				pipe.castShadow = true;
+				toilet.add(pipe);
+
+				const cover = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile, smallTile, smallTile / 16, 32),
+					material
+				);
+
+				cover.rotation.x = Math.PI / 2;
+				cover.position.set(0, tank.position.y + smallTile / 8, -smallTile);
+				cover.castShadow = true;
+				cover.receiveShadow = true;
+				toilet.add(cover);
+
+				stand.add(toilet);
+
+				stand.scale.set(0.7 * scale, scale, scale);
+				stand.position.set(x, y, z);
+				stand.rotation.y = rot;
+
+				return stand;
 			}
 		</script>
 		
