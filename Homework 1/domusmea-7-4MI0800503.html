@@ -97,7 +97,7 @@
 			doorsAndWindows.forEach(dw => scene.add(dw[0]));
 
 			scene.add(createTable(3 + 1.5 * smallTile, -3));
-			scene.add(createToaster(3 + smallTile, 0.7 + smallTile / 4, -3, 1.8, 0, -Math.PI / 3, 0, "pink"));
+			scene.add(createToaster(3 + smallTile, 0.7 + smallTile / 4, -3, 1.8, 0, -Math.PI / 3, 0, "pink", true));
 
 			//bathroom
 			scene.add(createToilet(4, 0, 2 - smallTile, -Math.PI / 2));
@@ -106,6 +106,16 @@
 			scene.add(createMirror(5, 0, 1 - smallTile, -Math.PI / 3));
 			scene.add(createMirror(5, 0, 3 - smallTile, Math.PI + Math.PI / 6));
 			scene.add(createMirror(3, 0, 3 - smallTile, Math.PI + -Math.PI / 3));
+
+			scene.add(createToaster(2.5, 0, 4.5, 0.7));
+
+			//toasterroom
+			for (let i = 0; i < 25; ++i) {
+				const color = new THREE.Color(Math.random(), Math.random(), Math.random());
+				scene.add(createToaster(-6.5 + Math.random() * 2.2, 0, -0.5 + Math.random() * 2.2, 1.8, 0, Math.random() * Math.PI * 2, 0, color));
+			}
+
+			scene.add(createMirror(-6, 0, 4.5, Math.PI / 2));
 
 			function createWall(x, z, width, length, rot = 0, height = 3) {
 				const wall = new THREE.Mesh(
@@ -254,7 +264,7 @@
 				return [windowFrame, windowSpace];
 			}
 			
-			function createToaster(x = 0, y = 0, z = 0, scale = 1, rotX = 0, rotY = 0, rotZ = 0, color = "silver") {
+			function createToaster(x = 0, y = 0, z = 0, scale = 1, rotX = 0, rotY = 0, rotZ = 0, color = "silver", branded = false) {
 				const geometry = new THREE.BoxGeometry(smallTile, smallTile * 0.3, smallTile * 0.5);
 				const material = new THREE.MeshPhongMaterial({ color, shininess: 50, specular: color });
 
@@ -264,6 +274,19 @@
 				upper.rotation.x = Math.PI / 2;
 				upper.position.y = smallTile * 0.15;
 				upper.scale.z = 0.3;
+
+				if (branded) {
+					const textureLoader = new THREE.TextureLoader();
+					const texture = textureLoader.load('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnT8r_zOXrPbPyaCd3VBEQl2Ffm84c67c3SA&s', function (texture) {
+						const logo = new THREE.Mesh(
+							new THREE.PlaneGeometry(smallTile * 0.6, smallTile * 0.3), 
+							new THREE.MeshBasicMaterial({ map: texture })
+						);
+
+						logo.position.set(0, smallTile * 0.05, smallTile * 0.251);
+						toaster.add(logo);
+					});
+				}
 
 				const hole1 = new THREE.Mesh(new THREE.BoxGeometry(smallTile * 0.8, smallTile * 0.3, smallTile * 0.09));
 				hole1.position.y = smallTile * 0.15;
