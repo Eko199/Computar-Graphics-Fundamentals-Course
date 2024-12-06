@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+		<script type="importmap">
+			{ 
+				"imports": {
+					"three": "https://cdn.jsdelivr.net/npm/three@0.164.0/build/three.module.js",
+					"csg/": "https://cdn.jsdelivr.net/gh/looeee/threejs-csg@main/src/CSG/"
+				} 
+			}
+		</script>
+	</head>
+	<body>
+		<script type="module">
+			import * as THREE from "three";
+			import {CSG} from "csg/CSG.js";
+			
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setAnimationLoop(drawFrame);
+			document.body.appendChild(renderer.domElement);
+
+			const scene = new THREE.Scene();
+			scene.background = new THREE.Color("green");
+			
+			const aspect = window.innerWidth / window.innerHeight;
+			const camera = new THREE.PerspectiveCamera(30, aspect);
+			camera.position.set(0, 10, 30);
+			camera.lookAt(new THREE.Vector3(0, 5, 0));
+			
+			const light = new THREE.PointLight('white', 900);
+			light.position.set(0, 10, 15);
+			scene.add(light);
+			
+			const light2 = new THREE.PointLight('yellow', 500);
+			light2.position.set(0, 10, -15);
+			scene.add(light2);
+
+			const ornament = new THREE.Mesh(
+				new THREE.SphereGeometry(1, 32, 32),
+				new THREE.MeshPhongMaterial({ color: "red", shininess: 80, specular: "red" })
+			);
+
+			//credits: Мишето
+			const ornamentDecoration = new THREE.Mesh(
+				new THREE.SphereGeometry(1.01, 32, 32),
+				new THREE.MeshPhongMaterial({ color: "gold", shininess: 80, specular: "gold", wireframe: true })
+			);
+
+			ornament.add(ornamentDecoration);
+			
+			const ornamentHead = new THREE.Mesh(
+				new THREE.CylinderGeometry(0.2, 0.2, 0.2, 32, 32),
+				new THREE.MeshPhongMaterial({ color: "orange", shininess: 80, specular: "orange" })
+			);
+
+			ornamentHead.position.y = 1 + 0.2/2 - 0.02;
+			
+			const ornamentString = new THREE.Mesh(
+				new THREE.CylinderGeometry(0.01, 0.01, 6, 32, 32),
+				new THREE.MeshPhongMaterial({ color: "white" })
+			);
+
+			ornamentString.position.y = 1 + 6/2;
+			ornament.add(ornamentString);
+			ornament.add(ornamentHead);
+			scene.add(ornament);
+
+			ornament.position.y = 11;
+			
+			const ground = new THREE.Mesh(
+				new THREE.PlaneGeometry(100, 100),
+				new THREE.MeshPhongMaterial({ color: 0xffd5a1 })
+			);
+
+			ground.rotation.x = -Math.PI / 2;
+			scene.add(ground);
+			
+			const material = new THREE.MeshPhongMaterial({
+				color: "green",
+				transparent: true,
+				opacity: 0.9,
+				side: THREE.DoubleSide
+			});
+
+			const bottle = new THREE.Mesh(
+				new THREE.CylinderGeometry(1, 1, 3, 32),
+				material
+			);
+
+			const bottleUpper = new THREE.Mesh(
+				new THREE.CylinderGeometry(0.5, 1, 2, 32, 32, true),
+				material
+			);
+
+			const bottleUpperUpper = new THREE.Mesh(
+				new THREE.CylinderGeometry(0.2, 0.5, 2, 32, 32, true),
+				material
+			);
+			
+			const mouth = new THREE.Mesh(
+				new THREE.TorusGeometry(0.18, 0.05, 32, 32),
+				material
+			);
+
+			mouth.rotation.x = Math.PI / 2;
+			mouth.position.y = 1;
+			bottleUpperUpper.add(mouth)
+
+			bottleUpperUpper.position.y = 2
+			bottleUpper.add(bottleUpperUpper);
+
+			bottleUpper.position.y = 2.5
+			bottle.add(bottleUpper);
+
+			bottle.position.set(-10, 2.5, 0);
+			bottle.rotation.z = -Math.PI / 4;
+
+			scene.add(bottle);
+
+			const cork = new THREE.Mesh(
+				new THREE.CylinderGeometry(0.25, 0.15, 0.4, 32),
+				new THREE.MeshPhongMaterial({color:"brown"})
+			);
+
+			cork.position.set(-10 + 5.5 * Math.cos(Math.PI / 4), 2.5 + 5.5 * Math.sin(Math.PI / 4), 0);
+			cork.rotation.z = -Math.PI / 4;
+			
+			scene.add(cork);
+
+			let energy = 0.1, dy = 0.4, phi = 0, r = 1, rotCenter = null;
+			let ornamentAngle = -Math.PI / 2, ornamentMaxAngle = Math.PI / 8;
+
+			function drawFrame(t) {
+				//scene.rotation.y = t / 4000;
+
+				if (t < 500) {
+					renderer.render(scene, camera);
+					return;
+				}
+
+				if (cork.position.y > 0.2) {
+					let dx = t > 700 ? 0.2 : 0.4;
+					dy -= t > 700 ? 0.1 : 0.01;
+
+					cork.position.y = Math.max(cork.position.y + dy, 0.2);
+					cork.position.x += dx;
+
+					if (dy != 0) {
+						cork.rotation.z = (dy < 0 ? Math.PI : 0) - Math.atan(dx / dy);
+					}
+				} else if (energy > 0) {
+					if (rotCenter == null) {
+						rotCenter = new THREE.Vector3(cork.position.x + r / 2, cork.position.y, cork.position.z + r * Math.sqrt(3) / 2);
+						phi = Math.atan2(cork.position.z - rotCenter.z, cork.position.x - rotCenter.x);
+					}
+
+					phi += energy * 0.8;
+					r += energy / 4;
+					energy -= 0.001;
+
+					cork.position.set(rotCenter.x + r * Math.cos(phi), rotCenter.y, rotCenter.z + r * Math.sin(phi));
+					cork.rotation.set(-Math.PI / 2, 0, -Math.PI / 2 - phi);
+				}
+
+				if (t > 730 && ornamentMaxAngle > 0) {
+					ornamentAngle = -Math.PI / 2 + Math.sin((t - 730) / 200) * ornamentMaxAngle;
+					ornamentMaxAngle -= 0.003;
+
+					//string begins (0, 18, 0), R = 7
+					ornament.rotation.z = Math.PI / 2 + ornamentAngle;
+					ornament.position.set(7 * Math.cos(ornamentAngle), 18 + 7 * Math.sin(ornamentAngle), 0);
+				}
+
+				renderer.render(scene, camera);
+			}
+		</script>
+	</body>
+</html>
