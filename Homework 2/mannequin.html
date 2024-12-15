@@ -1,0 +1,229 @@
+﻿<!DOCTYPE html>
+
+<html>
+	<head>
+		<style>
+			body {color: black; text-shadow: 0 0 4px gray; font-family: Calibri;}
+			h1   {position: fixed; z-index: 10; top: 0; left: 0; text-align: center; width: 100%;}
+			div  {position: fixed; z-index: 10; bottom: 1em; left: 1em; font-size: 1.5em; font-style: italic;}
+		</style>
+		<script type="importmap">
+		{
+			"imports": {
+				"three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+				"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+				"mannequin": "https://cdn.jsdelivr.net/npm/mannequin-js@latest/src/mannequin.js"
+			}
+		}
+		</script>
+	</head>
+
+	<body>
+	
+		<!-- Сложете реално заглавие -->
+		<h1>Заглавие на сцената</h1>  
+		
+		<!-- Сложете описание на сцената (опитайте с рима) -->
+		<div>
+			Сложете тук един куплет,<br>
+			кажете в него де що става,<br>
+			a изборът ви на сюжет &ndash;<br>
+			без милост да ни грабва.
+		</div>
+		
+		<script type="module">
+			import * as MANNEQUIN from "mannequin";
+			import * as THREE from "three";
+	
+			MANNEQUIN.createStage(animate);  // инициализиране на сцената
+			const scene = MANNEQUIN.getStage().scene;
+
+			scene.add(createToilet(0, -0.55, -0.05, 0, 1.1));
+			const laptop = createLaptop(0, -0.055, 0.4, 0);
+			scene.add(laptop);
+	
+			// тук си направете човечетата и статичните елементи по позите
+			const figure = new MANNEQUIN.Male();
+			figure.position.y = -0.1;	
+			figure.l_knee.bend = 90;
+			figure.r_knee.bend = 90;
+			figure.l_leg.straddle = -40;
+			figure.r_leg.straddle = -40;
+			figure.l_leg.raise = 100;
+			figure.r_leg.raise = 100;
+			figure.l_leg.turn = -10;
+			figure.r_leg.turn = -10;
+			figure.l_ankle.bend = -30;
+			figure.r_ankle.bend = -30;
+			figure.torso.bend = 10;
+			
+			figure.l_elbow.bend = 55;
+			figure.r_elbow.bend = 55;
+			figure.l_arm.raise = 20;
+			figure.r_arm.raise = 20;
+			figure.l_arm.straddle = -2;
+			figure.r_arm.straddle = -2;
+			figure.l_wrist.turn = -90;
+			figure.r_wrist.turn = -90;
+			
+			function animate(time) {
+				if (time < 5) {
+					figure.l_wrist.bend = -25 + Math.sin(time * 5) * 10;
+					figure.r_wrist.bend = -25 + Math.sin((2 + time) * 5) * 10;
+
+					figure.head.nod = 20 + Math.sin(time * 3) * 3;
+				} else if (time < 10) {
+					const time1 = time - 10;
+					figure.l_elbow.bend = 55 + Math.sin(time1 * 5) * 20;
+					figure.r_elbow.bend = 55 + Math.sin(time1 * 5) * 20;
+
+					figure.l_arm.raise = 20 + Math.sin(time1 * 5) * 10;
+					figure.r_arm.raise = 20 + Math.sin(time1 * 5) * 10;
+
+					figure.head.turn = Math.sin(time1 * 10) * 10;
+
+					laptop.position.y = figure.l_elbow.bend < 55 ? -0.06 : -0.055;
+				} else if (time < 15) {
+					figure.r_elbow.bend = 55 - Math.sin(75) * 20 + Math.sin(time * 10) * 30;
+					figure.r_arm.raise = 20 - Math.sin(75) * 10 + Math.sin(time * 10) * 20;
+
+					figure.head.turn = Math.sin(time * 15) * 15;
+
+					laptop.position.y = figure.l_elbow.bend < 55 ? -0.06 : -0.055;
+				}
+			}
+
+			function createToilet(x = 0, y = 0, z = 0, rot = 0, scale = 1) {
+				const smallTile = 0.2;
+				const material = new THREE.MeshPhongMaterial({ color: "white", shininess: 50, specular: "white", side: THREE.DoubleSide });
+
+				const stand = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile / 2, smallTile, smallTile * 1.5, 32),
+					material
+				);
+
+				stand.castShadow = true;
+				stand.receiveShadow = true;
+
+				const toilet = new THREE.Mesh(
+					new THREE.SphereGeometry(smallTile, 32, 32, 0, Math.PI * 2, -Math.PI, Math.PI / 2),
+					material
+				);
+
+				toilet.position.y = smallTile * (1 + 0.75 - 0.15);
+				toilet.castShadow = true;
+				toilet.receiveShadow = true;
+
+				const water = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile * 0.8, smallTile * 0.1, smallTile * 0.6, 32),
+					new THREE.MeshPhongMaterial({ color: "blue", transparent: true, opacity: 0.7 })
+				);
+
+				water.position.y = -smallTile * 0.8;
+				toilet.add(water);
+
+				const seat = new THREE.Mesh(
+					new THREE.TorusGeometry(smallTile, smallTile / 4, 32, 32),
+					material
+				);
+
+				seat.rotation.x = Math.PI / 2;
+				seat.scale.z = 0.5;
+				seat.castShadow = true;
+				seat.receiveShadow = true;
+				toilet.add(seat);
+
+				const tank = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile * 1.5, smallTile, smallTile * 2.2, 5),
+					material
+				);
+
+				tank.rotation.y = Math.PI;
+				tank.scale.z = 0.2;
+				tank.position.set(0, smallTile, -smallTile * 1.25);
+				tank.receiveShadow = true;
+				tank.castShadow = true;
+
+				const button = new THREE.Mesh(
+					new THREE.BoxGeometry(smallTile / 3, smallTile / 16, smallTile / 2),
+					material
+				);
+
+				button.position.set(-smallTile * 1.2, smallTile * 0.7, 0);
+				button.receiveShadow = true;
+				button.castShadow = true;
+				tank.add(button);
+
+				toilet.add(tank);
+
+				const pipe = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile / 4, smallTile / 4, smallTile / 1.5, 20),
+					material
+				);
+
+				pipe.rotation.x = -Math.PI / 7;
+				pipe.scale.z = 0.5;
+				pipe.position.set(0, -smallTile * 0.3, -smallTile * 1.105);
+				pipe.receiveShadow = true;
+				pipe.castShadow = true;
+				toilet.add(pipe);
+
+				const cover = new THREE.Mesh(
+					new THREE.CylinderGeometry(smallTile, smallTile, smallTile / 16, 32),
+					material
+				);
+
+				cover.rotation.x = Math.PI / 2;
+				cover.position.set(0, tank.position.y + smallTile / 8, -smallTile);
+				cover.castShadow = true;
+				cover.receiveShadow = true;
+				toilet.add(cover);
+
+				stand.add(toilet);
+
+				stand.scale.set(0.7 * scale, scale, scale);
+				stand.position.set(x, y, z);
+				stand.rotation.y = rot;
+
+				return stand;
+			}
+
+			function createLaptop(x = 0, y = 0, z = 0, rot = 0, scale = 1) {
+				const material = new THREE.MeshPhongMaterial({ color: "silver" });
+
+				const laptop = new THREE.Mesh(
+					new THREE.BoxGeometry(0.4, 0.01, 0.25),
+					material
+				);
+
+				laptop.castShadow = true;
+				laptop.receiveShadow = true;
+
+				const laptopTop = new THREE.Mesh(
+					new THREE.BoxGeometry(0.4, 0.25, 0.01),
+					material
+				);
+
+				laptopTop.castShadow = true;
+				laptopTop.receiveShadow = true;
+				laptopTop.position.z = 0.125;
+				laptopTop.position.y = 0.125;
+
+				const screen = new THREE.Mesh(
+					new THREE.BoxGeometry(0.37, 0.20, 0.003),
+					new THREE.MeshPhongMaterial({ color: "cyan" })
+				);
+
+				screen.position.z = -0.005;
+				laptopTop.add(screen);
+				laptop.add(laptopTop);
+
+				laptop.scale.set(scale, scale, scale);
+				laptop.position.set(x, y, z);
+				laptop.rotation.y = rot;
+
+				return laptop;
+			}
+		</script>
+	</body>
+</html>
