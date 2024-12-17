@@ -21,12 +21,12 @@
 	<body>
 	
 		<!-- Сложете реално заглавие -->
-		<h1>Заглавие на сцената</h1>  
+		<h1>Време за домашното по ОКГ</h1>  
 		
 		<!-- Сложете описание на сцената (опитайте с рима) -->
 		<div>
-			Сложете тук един куплет,<br>
-			кажете в него де що става,<br>
+			Сядам аз и почвам<br>
+			домашното до мъча<br>
 			a изборът ви на сюжет &ndash;<br>
 			без милост да ни грабва.
 		</div>
@@ -65,31 +65,143 @@
 			figure.r_arm.straddle = -2;
 			figure.l_wrist.turn = -90;
 			figure.r_wrist.turn = -90;
+
+			let laptopVelocity = null;
 			
 			function animate(time) {
-				if (time < 5) {
-					figure.l_wrist.bend = -25 + Math.sin(time * 5) * 10;
-					figure.r_wrist.bend = -25 + Math.sin((2 + time) * 5) * 10;
+				// if (time < 5) {
+				// 	figure.l_wrist.bend = -25 + Math.sin(time * 5) * 10;
+				// 	figure.r_wrist.bend = -25 + Math.sin((2 + time) * 5) * 10;
 
-					figure.head.nod = 20 + Math.sin(time * 3) * 3;
-				} else if (time < 10) {
-					const time1 = time - 10;
-					figure.l_elbow.bend = 55 + Math.sin(time1 * 5) * 20;
-					figure.r_elbow.bend = 55 + Math.sin(time1 * 5) * 20;
+				// 	figure.head.nod = 20 + Math.sin(time * 3) * 3;
+				// } else if (time < 10) {
+				// 	const time1 = time - 10;
+				// 	figure.l_elbow.bend = 75 + Math.sin(time1 * 5) * 20;
+				// 	figure.r_elbow.bend = 75 + Math.sin(time1 * 5) * 20;
 
-					figure.l_arm.raise = 20 + Math.sin(time1 * 5) * 10;
-					figure.r_arm.raise = 20 + Math.sin(time1 * 5) * 10;
+				// 	figure.l_arm.raise = 20 + Math.sin(time1 * 5) * 10;
+				// 	figure.r_arm.raise = 20 + Math.sin(time1 * 5) * 10;
 
-					figure.head.turn = Math.sin(time1 * 10) * 10;
+				// 	figure.head.turn = Math.sin(time1 * 10) * 10;
 
-					laptop.position.y = figure.l_elbow.bend < 55 ? -0.06 : -0.055;
-				} else if (time < 15) {
-					figure.r_elbow.bend = 55 - Math.sin(75) * 20 + Math.sin(time * 10) * 30;
-					figure.r_arm.raise = 20 - Math.sin(75) * 10 + Math.sin(time * 10) * 20;
+				// 	laptop.position.y = figure.l_elbow.bend < 65 ? -0.06 : -0.055;
+				// } else if (time < 15) {
+				// 	const time1 = time - 15;
+				// 	figure.r_elbow.bend = 75 + Math.sin(time1 * 10) * 20;
+				// 	figure.r_arm.raise = 20 + Math.sin(time1 * 10) * 20;
 
-					figure.head.turn = Math.sin(time * 15) * 15;
+				// 	figure.head.turn = Math.sin(time1 * 15) * 15;
 
-					laptop.position.y = figure.l_elbow.bend < 55 ? -0.06 : -0.055;
+				// 	laptop.position.y = figure.r_elbow.bend < 65 ? -0.06 : -0.055;
+				// } else if (time < 16) {
+				// 	figure.l_elbow.bend++;
+				// 	figure.r_elbow.bend++;
+
+				// 	figure.l_arm.raise++;
+				// 	figure.r_arm.raise++;
+
+				// 	figure.l_wrist.turn += 1.5;
+				// 	figure.r_wrist.turn += 1.5;
+
+				// 	figure.l_arm.straddle -= 0.1;
+				// 	figure.r_arm.straddle -= 0.1;
+
+				// 	figure.r_arm.turn -= 0.3;
+				// 	figure.l_arm.turn -= 0.3;
+				// }
+
+				// if (15 <= time && time < 22) {
+				// 	figure.torso.bend = 10 + Math.sin((time - 15) * 5) * (5 + (time - 15) / 5);
+				// } else if (22 <= time && time < 23) {
+				// 	figure.l_elbow.bend--;
+				// 	figure.l_arm.raise--;
+				// 	figure.l_arm.straddle += 0.25;
+
+				// 	figure.r_elbow.bend -= 1.5;
+				// 	figure.r_arm.raise--;
+				// 	figure.r_arm.straddle += 0.25;
+				// 	figure.r_arm.turn += 0.4;
+				// } else if (23 <= time && time < 25) {
+				// 	const time1 = time - 23;
+				// 	if (time1 > 0.5) {
+				// 		figure.position.y = -0.01 + (time1 - 0.5) * 0.16;	
+				// 		figure.position.z = (time1 - 0.5) * 0.20;
+				// 	} else {
+				// 		figure.position.y = -0.1 + time1 * 0.18;	
+				// 	}
+				// 	figure.l_knee.bend = 90 - time1 * 45;
+				// 	figure.r_knee.bend = 90 - time1 * 45;
+				// 	//figure.l_leg.straddle = -40 + time1 * 20;
+				// 	//figure.r_leg.straddle = -40 + time1 * 20;
+				// 	figure.l_leg.raise = 100 - time1 * 50;
+				// 	figure.r_leg.raise = 100 - time1 * 50;
+				// 	figure.l_leg.turn = -10 + time1 * 5;
+				// 	figure.r_leg.turn = -10 + time1 * 5;
+				// 	figure.l_ankle.bend = -30 + time1 * 15;
+				// 	figure.r_ankle.bend = -30 + time1 * 15;
+				// 	figure.torso.bend -= 0.15;
+				// }
+
+				if (time < 1)
+					return
+				time--
+
+				if (time < 1.2) {
+					let time1 = time;
+					time1 *= 2/1.2;
+
+					if (time1 > 0.36) {
+						figure.position.y = -0.1 + (2 - 0.36) * 0.21 * Math.sin(Math.PI / 2 * ((time1 - 0.36) / (2 - 0.36)));
+					}
+
+					if (time1 > 0.4) {
+						figure.position.z = (time1 - 0.4) * 0.35;
+					}
+
+					figure.l_knee.bend = 90 - time1 * 45;
+					figure.r_knee.bend = 90 - time1 * 45;
+
+					figure.l_leg.raise = 100 - time1 * 50;
+					figure.r_leg.raise = 100 - time1 * 50;
+
+					figure.l_leg.turn = -10 + time1 * 5;
+					figure.r_leg.turn = -10 + time1 * 5;
+
+					if (time1 < 0.5) {
+						figure.l_ankle.bend = -30 + time1 * 60;
+						figure.r_ankle.bend = -30 + time1 * 60;
+
+						figure.l_leg.straddle -= 0.32;
+						figure.r_leg.straddle -= 0.32;
+					}
+					
+					figure.torso.bend -= 0.1;
+				}
+
+				if (time < 1) {
+					figure.r_arm.straddle += 1.5;
+					figure.r_elbow.bend -= 0.4;
+					
+					if (time > 0.1 && time <= 0.3) {
+						laptop.position.x -= 0.014;
+						laptop.position.y += 0.013;
+						laptop.position.z += 0.005;
+					} else if (time > 0.3 && laptopVelocity == null) {
+						laptopVelocity = new THREE.Vector3(-0.022, 0.022, 0.005);
+					}
+				}
+
+				if (laptopVelocity != null) {
+					laptop.position.add(laptopVelocity);
+					laptopVelocity.y -= 0.0005;
+					laptop.rotation.x += 0.1;
+					laptop.rotation.y += 0.1;
+					laptop.rotation.z += 0.1;
+
+					if (laptop.position.y <= -0.7) {
+						laptop.position.y = -0.7;
+						laptopVelocity = null;
+					}
 				}
 			}
 
