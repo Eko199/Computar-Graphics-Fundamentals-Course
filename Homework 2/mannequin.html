@@ -23,9 +23,7 @@
 	
 		<!-- Сложете реално заглавие -->
 		<h1>Време за домашното по ОКГ
-			<button id="start">
-				Старт
-			</button>
+			<button id="start">Старт</button>
 		</h1>  
 		
 		<!-- Сложете описание на сцената (опитайте с рима) -->
@@ -61,6 +59,7 @@
 	
 			// тук си направете човечетата и статичните елементи по позите
 			const figure = new MANNEQUIN.Male();
+			let figure2 = null;
 			figure.recolor("red");
 
 			figure.position.y = -0.1;	
@@ -253,6 +252,8 @@
 					figure.stepOnGround();
 				//suffer
 				} else {
+					figure.r_elbow.bend = rarmStartBend + (1 + Math.sin((time - 26.2 - 1/4) * 2 * Math.PI)) * 30;
+
 					if (figure.l_knee.bend > 40) {
 						figure.l_knee.bend -= 60 * deltaTime;
 						figure.r_knee.bend -= 60 * deltaTime;
@@ -262,7 +263,53 @@
 						figure.r_fingers.bend += 40 * deltaTime;
 					}
 
-				 	figure.r_elbow.bend = rarmStartBend + Math.abs(Math.sin((time - 26.2) * 4)) * 45;
+					if (figure2 == null && time > 26) {
+						addSecondPerson();
+					} else if (figure2 != null) {
+						let time1 = time - 26;
+
+						if (time1 < 0.5) {
+							figure2.head.nod = Math.sin(time1 * Math.PI) * 40;
+						} else if (time1 < 1.5) {
+							time1 -= 0.5;
+
+							figure2.l_knee.bend = Math.sin(time1 * Math.PI / 2) * 100;
+							figure2.r_knee.bend = Math.sin(time1 * Math.PI / 2) * 95;
+
+							figure2.r_leg.raise = Math.sin(time1 * Math.PI / 2) * 92;
+
+							figure2.l_ankle.bend = -Math.sin(time1 * Math.PI / 2) * 15;
+							figure2.r_ankle.bend = Math.sin(time1 * Math.PI / 2) * 10;
+
+							figure2.torso.bend = Math.sin(time1 * Math.PI / 2) * 30;
+							figure2.torso.turn = Math.sin(time1 * Math.PI / 2) * 15;
+
+							figure2.stepOnGround();
+
+							if (time1 >= 0.5) {
+								time1 -= 0.5;
+
+								figure2.l_arm.raise = Math.sin(time1 * Math.PI / 2) * 50;
+								figure2.l_elbow.bend = Math.sin(time1 * Math.PI / 2) * 30;
+								figure2.l_wrist.turn = -Math.sin(time1 * Math.PI / 2) * 90;
+							}
+						} else if (time1 < 2) {
+							time1--;
+
+							figure2.l_arm.raise = Math.sin(time1 * Math.PI / 2) * 50;
+							figure2.l_elbow.bend = Math.sin(time1 * Math.PI / 2) * 30;
+							figure2.l_wrist.turn = -Math.sin(time1 * Math.PI / 2) * 90;
+
+							time1 -= 0.5;
+							figure2.l_wrist.bend = -Math.sin(time1 * Math.PI) * 25;
+						} else {
+							time1 -= 2;
+
+							figure2.l_wrist.bend = -25 - (1 + Math.sin((time1 - 0.5) * Math.PI)) * 5;
+							figure2.l_elbow.bend = 30 + (1 + Math.sin((time1 - 0.5) * Math.PI));
+							figure2.l_arm.raise = 50 + (1 + Math.sin((time1 - 0.5) * Math.PI));
+						}
+					}
 				}
 
 				if (laptopVelocity != null) {
@@ -281,6 +328,14 @@
 				figure.head.scale.set(figure.head.scale.x + 0.0001, figure.head.scale.y + 0.0001, figure.head.scale.z + 0.0001);
 			}
 
+			function addSecondPerson() {
+				figure2 = new MANNEQUIN.Female();
+				
+				figure2.position.x = 0.6;
+				figure2.position.z = 2.5;
+				figure2.lookAt(new THREE.Vector3(figure.position.x, figure2.position.y, figure.position.z));
+			}
+			
 			function createToilet(x = 0, y = 0, z = 0, rot = 0, scale = 1) {
 				const smallTile = 0.2;
 				const material = new THREE.MeshPhongMaterial({ color: "white", shininess: 50, specular: "white", side: THREE.DoubleSide });
